@@ -16,12 +16,12 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef FLYINGADCBMS_H
-#define FLYINGADCBMS_H
+#ifndef MAXBMS_H
+#define MAXBMS_H
 #include <stdint.h>
 #include "bmshardware.h"
 
-class FlyingAdcBms : public BMSHardware
+class MaxBms : public BMSHardware
 {
    public:
       static void Init();
@@ -34,12 +34,8 @@ class FlyingAdcBms : public BMSHardware
    protected:
 
    private:
-      static void SendRecvI2C(uint8_t address, bool read, uint8_t* data, uint8_t len);
-      static void BitBangI2CStart();
-      static uint8_t BitBangI2CByte(uint8_t byte, bool ack);
-      static void BitBangI2CStop();
 
-      static uint8_t selectedChannel, previousChannel, i2cdelay;
+      static uint8_t selectedChannel, previousChannel;
 };
 
-#endif // FLYINGADCBMS_H
+#endif // MAXBMS_H

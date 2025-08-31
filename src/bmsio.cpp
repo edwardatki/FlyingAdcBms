@@ -21,10 +21,26 @@
 #include "anain.h"
 #include "temp_meas.h"
 #include "my_math.h"
-#include "flyingadcbms.h"
+
+#ifdef HWV1
+    #include "flyingadcbms.h"
+    static FlyingAdcBms bmshardware;
+#elif HWV2
+    #include "flyingadcbms.h"
+    static FlyingAdcBms bmshardware;
+#elif HW_MAX
+    #include "maxbms.h"
+    static MaxBms bmshardware;
+#else
+    #error "Unknown hardware platform"
+#endif
 
 BmsFsm* BmsIO::bmsFsm;
 int BmsIO::muxRequest = -1;
+
+void BmsIO::Init() {
+   bmshardware.Init();
+}
 
 /** \brief Mux control function. Must be called in 2 ms interval */
 void BmsIO::SwitchMux()
@@ -35,21 +51,21 @@ void BmsIO::SwitchMux()
    //t=0 ms: On a mux change request first completely turn off mux
    if (muxRequest >= 0)
    {
-      FlyingAdcBms::MuxOff();
+      bmshardware.MuxOff();
       channel = muxRequest;
       muxRequest = -1;
    }
    //t=2 ms: switch to requested channel
    else if (channel >= 0)
    {
-      FlyingAdcBms::SelectChannel(channel);
+      bmshardware.SelectChannel(channel);
       channel = -1;
       startAdc = true;
    }
    //t=4 ms: start ADC
    else if (startAdc)
    {
-      FlyingAdcBms::StartAdc();
+      bmshardware.StartAdc();
       startAdc = false;
    }
    //t=21 ms: ADC conversion is finished
@@ -98,28 +114,28 @@ void BmsIO::ReadCellVoltages()
 
          if (udc < (balanceTarget - 3) && (balMode & BAL_ADD))
          {
-            bstt = FlyingAdcBms::SetBalancing(FlyingAdcBms::BAL_CHARGE);
+            bstt = bmshardware.SetBalancing(FlyingAdcBms::BAL_CHARGE);
          }
          else if (udc > (balanceTarget + 1) && (balMode & BAL_DIS))
          {
-            bstt = FlyingAdcBms::SetBalancing(FlyingAdcBms::BAL_DISCHARGE);
+            bstt = bmshardware.SetBalancing(FlyingAdcBms::BAL_DISCHARGE);
          }
          else
          {
-            bstt = FlyingAdcBms::SetBalancing(FlyingAdcBms::BAL_OFF);
+            bstt = bmshardware.SetBalancing(FlyingAdcBms::BAL_OFF);
             balanceCycles = 0;
          }
          Param::SetInt((Param::PARAM_NUM)(Param::u0cmd + chan), bstt);
       }
       else
       {
-         FlyingAdcBms::SetBalancing(FlyingAdcBms::BAL_OFF);
+         bmshardware.SetBalancing(FlyingAdcBms::BAL_OFF);
       }
    }
    else
    {
       balanceCycles = totalBalanceCycles;
-      bstt = FlyingAdcBms::SetBalancing(FlyingAdcBms::BAL_OFF);
+      bstt = bmshardware.SetBalancing(FlyingAdcBms::BAL_OFF);
       Param::SetInt((Param::PARAM_NUM)(Param::u0cmd + chan), bstt);
    }
 
@@ -138,7 +154,7 @@ void BmsIO::ReadCellVoltages()
          gain *= 1 + Param::GetFloat(Param::correction15) / 1000000.0f;
 
       //Read ADC result before mux change
-      float udc = FlyingAdcBms::GetResult() * (gain / 1000.0f);
+      float udc = bmshardware.GetResult() * (gain / 1000.0f);
 
       Param::SetFloat((Param::PARAM_NUM)(Param::u0 + chan), udc);
 
@@ -265,10 +281,10 @@ void BmsIO::TestReadCellVoltage(int chan, FlyingAdcBms::BalanceCommand cmd)
    else if (chan == 15)
       gain *= 1 + Param::GetFloat(Param::correction15) / 1000000.0f;
 
-   float udc = FlyingAdcBms::GetResult() * (gain / 1000.0f);;
-   FlyingAdcBms::SelectChannel(chan);
-   FlyingAdcBms::SetBalancing(cmd);
-   FlyingAdcBms::StartAdc();
+   float udc = bmshardware.GetResult() * (gain / 1000.0f);;
+   bmshardware.SelectChannel(chan);
+   bmshardware.SetBalancing(cmd);
+   bmshardware.StartAdc();
    Param::SetFloat((Param::PARAM_NUM)(Param::u0 + chan), udc);
 }
 

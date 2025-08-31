@@ -28,6 +28,7 @@
 class BmsIO
 {
    public:
+      static void Init();
       static void ReadTemperatures();
       static void SwitchMux();
       static void ReadCellVoltages();

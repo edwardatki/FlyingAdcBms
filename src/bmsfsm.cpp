@@ -17,10 +17,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "bmsfsm.h"
+#include "bmsio.h"
 #include "anain.h"
 #include "digio.h"
 #include "my_math.h"
-#include "flyingadcbms.h"
 #include "selftest.h"
 
 #define IS_FIRST_THRESH       1800
@@ -142,7 +142,7 @@ BmsFsm::bmsstate BmsFsm::Run(bmsstate currentState)
       return INIT;
       break;
    case INIT:
-      FlyingAdcBms::Init();
+      BmsIO::Init();
       return SELFTEST;
    case SELFTEST:
       if (SelfTest::GetLastResult() == SelfTest::TestsDone)

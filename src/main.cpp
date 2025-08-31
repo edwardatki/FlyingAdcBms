@@ -38,7 +38,6 @@
 #include "stm32scheduler.h"
 #include "terminalcommands.h"
 #include "sdocommands.h"
-#include "flyingadcbms.h"
 #include "bmsfsm.h"
 #include "bmsalgo.h"
 #include "bmsio.h"
@@ -199,7 +198,7 @@ static void ReadCellVoltages(void)
    else if (Param::GetBool(Param::enable) && (opmode == BmsFsm::RUN || opmode == BmsFsm::IDLE))
       BmsIO::ReadCellVoltages();
    else
-      FlyingAdcBms::MuxOff();
+      return;//FlyingAdcBms::MuxOff();
 }
 
 /** This function is called when the user changes a parameter */
@@ -316,3 +315,4 @@ extern "C" int main(void)
 
 /* to solve linker warning, see https://openinverter.org/forum/viewtopic.php?p=64546#p64546 */
 extern "C" void __cxa_pure_virtual() { while (1); }
+

@@ -5,6 +5,7 @@ updater.py
 *.hex
 *.bin
 *.json
+stm32_bms*
 FlyingAdcBms.cscope_file_list
 FlyingAdcBms.layout
 can-updater.py
