@@ -21,7 +21,7 @@
 #include <stdint.h>
 #include "bmshardware.h"
 
-class FlyingAdcBms : public BMSHardware
+class FlyingAdcBms : public BmsHardware
 {
    public:
       static void Init();

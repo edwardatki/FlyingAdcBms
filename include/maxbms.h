@@ -21,7 +21,7 @@
 #include <stdint.h>
 #include "bmshardware.h"
 
-class MaxBms : public BMSHardware
+class MaxBms : public BmsHardware
 {
    public:
       static void Init();

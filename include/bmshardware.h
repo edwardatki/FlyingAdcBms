@@ -1,7 +1,7 @@
 #ifndef BMSHARDWARE_H
 #define BMSHARDWARE_H
 
-class BMSHardware
+class BmsHardware
 {
     public:
         enum BalanceCommand { BAL_OFF, BAL_CHARGE, BAL_DISCHARGE };
