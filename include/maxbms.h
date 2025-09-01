@@ -25,17 +25,7 @@ class MaxBms : public BmsHardware
 {
    public:
       static void Init();
-      static void MuxOff();
-      static void SelectChannel(uint8_t channel);
-      static void StartAdc();
-      static float GetResult();
-      static BalanceStatus SetBalancing(BalanceCommand cmd);
-
-   protected:
-
-   private:
-
-      static uint8_t selectedChannel, previousChannel;
+   
 };
 
 #endif // MAXBMS_H

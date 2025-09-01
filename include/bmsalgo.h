@@ -25,6 +25,9 @@
 class BmsAlgo
 {
    public:
+      enum class BalanceMode { BAL_NONE = 0, BAL_ADD = 1, BAL_SUB = 2, BAL_BOTH = 3 };
+      enum class BalanceCommand { BAL_OFF, BAL_CHARGE, BAL_DISCHARGE };
+
       static float EstimateSocFromVoltage(float lowestVoltage);
       static float CalculateSocFromIntegration(float lastSoc, float asDiff);
       static float CalculateSoH(float lastSoc, float newSoc, float asDiff);
@@ -35,6 +38,7 @@ class BmsAlgo
       static void SetNominalCapacity(float c) { nominalCapacity = c; }
       static void SetSocLookupPoint(uint8_t soc, uint16_t voltage);
       static void SetCCCVCurve(uint8_t idx, float current, uint16_t voltage);
+      static BalanceCommand SelectBalancing(BalanceMode balanceMode, float ucell, float umin, float umax, float uavg);
 
    private:
       static float nominalCapacity;

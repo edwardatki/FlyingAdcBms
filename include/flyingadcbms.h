@@ -20,26 +20,23 @@
 #define FLYINGADCBMS_H
 #include <stdint.h>
 #include "bmshardware.h"
+#include "adc.h"
 
 class FlyingAdcBms : public BmsHardware
 {
    public:
-      static void Init();
-      static void MuxOff();
-      static void SelectChannel(uint8_t channel);
-      static void StartAdc();
-      static float GetResult();
-      static BalanceStatus SetBalancing(BalanceCommand cmd);
+      static BalanceStatus SetBalancing(BmsAlgo::BalanceCommand cmd);
+
+      static void Ms2Task();
+      static void Ms25Task();
+      static void Ms100Task();
+
+      static Adc adc;
 
    protected:
 
    private:
-      static void SendRecvI2C(uint8_t address, bool read, uint8_t* data, uint8_t len);
-      static void BitBangI2CStart();
-      static uint8_t BitBangI2CByte(uint8_t byte, bool ack);
-      static void BitBangI2CStop();
-
-      static uint8_t selectedChannel, previousChannel, i2cdelay;
+      static uint8_t selectedChannel, previousChannel;
 };
 
 #endif // FLYINGADCBMS_H

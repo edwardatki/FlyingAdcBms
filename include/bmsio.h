@@ -20,6 +20,7 @@
 #define BMSIO_H
 
 #include "bmsfsm.h"
+#include "bmsalgo.h"
 #include "flyingadcbms.h"
 
 #define NO_TEMP    127
@@ -32,7 +33,7 @@ class BmsIO
       static void ReadTemperatures();
       static void SwitchMux();
       static void ReadCellVoltages();
-      static void TestReadCellVoltage(int chan, FlyingAdcBms::BalanceCommand cmd);
+      static void TestReadCellVoltage(int chan, BmsAlgo::BalanceCommand cmd);
       static void MeasureCurrent();
       static void SetBmsFsm(BmsFsm* b) { bmsFsm = b; }
 

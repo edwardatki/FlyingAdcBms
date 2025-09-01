@@ -1,0 +1,16 @@
+Tasks:
+    - BmsIO::MeasureCurrent, 5ms
+        - Read current sensor
+    - ReadCellVoltages, 25ms
+        - RunSelfTest
+        - BmsIO::ReadCellVoltages
+            - Cycle through cells, read voltage and set balancing
+    - BmsIO::SwitchMux, 2ms
+        - Safely switch adc mux
+    - Ms100Task, 100ms
+        - Status LED
+        - Run BmsFsm
+        - ReadTemperatures
+        - CalculateCurrentLimits
+        - CalculateSocSoh
+        - CAN send

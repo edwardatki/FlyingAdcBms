@@ -194,7 +194,7 @@ static void ReadCellVoltages(void)
    if (opmode == BmsFsm::SELFTEST)
       RunSelfTest();
    else if (testchan >= 0)
-      BmsIO::TestReadCellVoltage(testchan, (FlyingAdcBms::BalanceCommand)Param::GetInt(Param::testbalance));
+      BmsIO::TestReadCellVoltage(testchan, (BmsAlgo::BalanceCommand)Param::GetInt(Param::testbalance));
    else if (Param::GetBool(Param::enable) && (opmode == BmsFsm::RUN || opmode == BmsFsm::IDLE))
       BmsIO::ReadCellVoltages();
    else
@@ -285,7 +285,7 @@ extern "C" int main(void)
 
    s.AddTask(BmsIO::MeasureCurrent, 5);
    s.AddTask(ReadCellVoltages, 25);
-   s.AddTask(BmsIO::SwitchMux, 2); //This must added after ReadCellVoltages() to avoid an additional 2 ms delay
+   s.AddTask(FlyingAdcBms::Ms2Task, 2); //This must added after ReadCellVoltages() to avoid an additional 2 ms delay
    s.AddTask(Ms100Task, 100);
 
    Param::SetInt(Param::hwrev, hwRev);
@@ -312,7 +312,7 @@ extern "C" int main(void)
 
    return 0;
 }
-
+ 
 /* to solve linker warning, see https://openinverter.org/forum/viewtopic.php?p=64546#p64546 */
 extern "C" void __cxa_pure_virtual() { while (1); }
 

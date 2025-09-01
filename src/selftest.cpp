@@ -18,7 +18,9 @@
  */
 #include "selftest.h"
 #include "flyingadcbms.h"
+#include "cellmux.h"
 #include "my_math.h"
+#include "mcp3421.h"
 
 SelfTest::TestFunction SelfTest::testFunctions[] = {
    RunTestMuxOff, RunTestBalancer, TestCellConnection, TestCellConnection, NoTest
@@ -62,12 +64,12 @@ SelfTest::TestResult SelfTest::RunTest(int& testStep)
 SelfTest::TestResult SelfTest::RunTestMuxOff()
 {
    if (cycleCounter == 0) {
-      FlyingAdcBms::MuxOff();
-      FlyingAdcBms::SetBalancing(FlyingAdcBms::BAL_DISCHARGE);
-      FlyingAdcBms::StartAdc();
+      CellMux::MuxOff();
+      FlyingAdcBms::SetBalancing(BmsAlgo::BalanceCommand::BAL_DISCHARGE);
+      MCP3421::StartAdc();
    }
    else if (cycleCounter == 1) {
-      int adc = FlyingAdcBms::GetResult();
+      int adc = MCP3421::GetResult();
       adc = ABS(adc);
 
       if (adc < 5) //We expect no voltage on the ADC
@@ -88,12 +90,12 @@ SelfTest::TestResult SelfTest::RunTestMuxOff()
 SelfTest::TestResult SelfTest::RunTestBalancer()
 {
    if (cycleCounter == 0) {
-      FlyingAdcBms::MuxOff();
-      FlyingAdcBms::SetBalancing(FlyingAdcBms::BAL_CHARGE);
-      FlyingAdcBms::StartAdc();
+      CellMux::MuxOff();
+      FlyingAdcBms::SetBalancing(BmsAlgo::BalanceCommand::BAL_CHARGE);
+      MCP3421::StartAdc();
    }
    else if (cycleCounter == 2) {
-      int adc = FlyingAdcBms::GetResult();
+      int adc = MCP3421::GetResult();
 
       if (adc < 8190) { //We expect the ADC to saturate
          errChannel = adc;
@@ -101,14 +103,14 @@ SelfTest::TestResult SelfTest::RunTestBalancer()
       }
    }
    else if (cycleCounter == 3) {
-      FlyingAdcBms::SelectChannel(1); //this leads to negative voltage
-      FlyingAdcBms::MuxOff(); //but we turn off the mux right away
-      FlyingAdcBms::SetBalancing(FlyingAdcBms::BAL_CHARGE);
-      FlyingAdcBms::StartAdc();
+      CellMux::SelectChannel(1); //this leads to negative voltage
+      CellMux::MuxOff(); //but we turn off the mux right away
+      FlyingAdcBms::SetBalancing(BmsAlgo::BalanceCommand::BAL_CHARGE);
+      MCP3421::StartAdc();
    }
    else if (cycleCounter == 5) {
-      int adc = FlyingAdcBms::GetResult();
-      FlyingAdcBms::SetBalancing(FlyingAdcBms::BAL_OFF);
+      int adc = MCP3421::GetResult();
+      FlyingAdcBms::SetBalancing(BmsAlgo::BalanceCommand::BAL_OFF);
 
       if (adc < 8190) { //We expect the ADC to saturate
          errChannel = adc;
@@ -131,8 +133,8 @@ SelfTest::TestResult SelfTest::TestCellConnection()
 
    if (cycleCounter & 1) //on odd cycles measure, on even cycles switch mux
    {
-      int adc = FlyingAdcBms::GetResult();
-      FlyingAdcBms::MuxOff();
+      int adc = MCP3421::GetResult();
+      CellMux::MuxOff();
 
       if (adc < -1000) {
          errChannel = channel;
@@ -150,8 +152,8 @@ SelfTest::TestResult SelfTest::TestCellConnection()
    }
    else
    {
-      FlyingAdcBms::SelectChannel(channel);
-      FlyingAdcBms::StartAdc();
+      CellMux::SelectChannel(channel);
+      MCP3421::StartAdc();
    }
    return TestOngoing;
 }

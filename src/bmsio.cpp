@@ -21,55 +21,34 @@
 #include "anain.h"
 #include "temp_meas.h"
 #include "my_math.h"
+#include "flyingadcbms.h"
+#include "maxbms.h"
+#include "bmsalgo.h"
+#include "cellmux.h"
+#include "mcp3421.h"
 
-#ifdef HWV1
-    #include "flyingadcbms.h"
-    static FlyingAdcBms bmshardware;
-#elif HWV2
-    #include "flyingadcbms.h"
-    static FlyingAdcBms bmshardware;
-#elif HW_MAX
-    #include "maxbms.h"
-    static MaxBms bmshardware;
-#else
-    #error "Unknown hardware platform"
-#endif
+// BmsHardware bmshardware = FlyingAdcBms();
+FlyingAdcBms bmshardware = FlyingAdcBms();
+
+// #ifdef HWV1
+//     #include "flyingadcbms.h"
+//     static FlyingAdcBms bmshardware;
+// #elif HWV2
+//     #include "flyingadcbms.h"
+//     static FlyingAdcBms bmshardware;
+// #elif HW_MAX
+//     #include "maxbms.h"
+//     static MaxBms bmshardware;
+// #else
+//     #error "Unknown hardware platform"
+// #endif
 
 BmsFsm* BmsIO::bmsFsm;
-int BmsIO::muxRequest = -1;
+// int BmsIO::muxRequest = -1;
 
-void BmsIO::Init() {
-   bmshardware.Init();
-}
-
-/** \brief Mux control function. Must be called in 2 ms interval */
-void BmsIO::SwitchMux()
+void BmsIO::Init() 
 {
-   static int channel = -1;
-   static bool startAdc = false;
-
-   //t=0 ms: On a mux change request first completely turn off mux
-   if (muxRequest >= 0)
-   {
-      bmshardware.MuxOff();
-      channel = muxRequest;
-      muxRequest = -1;
-   }
-   //t=2 ms: switch to requested channel
-   else if (channel >= 0)
-   {
-      bmshardware.SelectChannel(channel);
-      channel = -1;
-      startAdc = true;
-   }
-   //t=4 ms: start ADC
-   else if (startAdc)
-   {
-      bmshardware.StartAdc();
-      startAdc = false;
-   }
-   //t=21 ms: ADC conversion is finished
-   //t=25 ms: ADC conversion result is read
+   // bmshardware.Init();
 }
 
 void BmsIO::ReadCellVoltages()
@@ -94,48 +73,56 @@ void BmsIO::ReadCellVoltages()
 
       if (balanceCycles > 0 && balanceCycles < (totalBalanceCycles - 1))
       {
-         float udc = Param::GetFloat((Param::PARAM_NUM)(Param::u0 + chan));
-         float balanceTarget = 0;
+         // float udc = Param::GetFloat((Param::PARAM_NUM)(Param::u0 + chan));
+         // float balanceTarget = 0;
 
-         switch (balMode)
-         {
-         case BAL_ADD: //maximum cell voltage is target when only adding
-            balanceTarget = Param::GetFloat(Param::umax);
-            break;
-         case BAL_DIS: //minimum cell voltage is target when only dissipating
-            balanceTarget = Param::GetFloat(Param::umin);
-            break;
-         case BAL_BOTH: //average cell voltage is target when dissipating and adding
-            balanceTarget = Param::GetFloat(Param::uavg);
-            break;
-         default: //not balancing
-            break;
-         }
+         // switch (balMode)
+         // {
+         // case BAL_ADD: //maximum cell voltage is target when only adding
+         //    balanceTarget = Param::GetFloat(Param::umax);
+         //    break;
+         // case BAL_DIS: //minimum cell voltage is target when only dissipating
+         //    balanceTarget = Param::GetFloat(Param::umin);
+         //    break;
+         // case BAL_BOTH: //average cell voltage is target when dissipating and adding
+         //    balanceTarget = Param::GetFloat(Param::uavg);
+         //    break;
+         // default: //not balancing
+         //    break;
+         // }
 
-         if (udc < (balanceTarget - 3) && (balMode & BAL_ADD))
-         {
-            bstt = bmshardware.SetBalancing(FlyingAdcBms::BAL_CHARGE);
-         }
-         else if (udc > (balanceTarget + 1) && (balMode & BAL_DIS))
-         {
-            bstt = bmshardware.SetBalancing(FlyingAdcBms::BAL_DISCHARGE);
-         }
-         else
-         {
-            bstt = bmshardware.SetBalancing(FlyingAdcBms::BAL_OFF);
-            balanceCycles = 0;
-         }
+         // if (udc < (balanceTarget - 3) && (balMode & BAL_ADD))
+         // {
+         //    bstt = bmshardware.SetBalancing(FlyingAdcBms::BAL_CHARGE);
+         // }
+         // else if (udc > (balanceTarget + 1) && (balMode & BAL_DIS))
+         // {
+         //    bstt = bmshardware.SetBalancing(FlyingAdcBms::BAL_DISCHARGE);
+         // }
+         // else
+         // {
+         //    bstt = bmshardware.SetBalancing(FlyingAdcBms::BAL_OFF);
+         //    balanceCycles = 0;
+         // }
+         BmsAlgo::BalanceCommand balanceCommand = BmsAlgo::SelectBalancing(
+            (BmsAlgo::BalanceMode)Param::GetInt(Param::balmode), 
+            Param::GetFloat((Param::PARAM_NUM)(Param::u0 + chan)),
+            Param::GetFloat(Param::umin),
+            Param::GetFloat(Param::umax),
+            Param::GetFloat(Param::uavg)
+         );
+         bstt = bmshardware.SetBalancing(balanceCommand);
          Param::SetInt((Param::PARAM_NUM)(Param::u0cmd + chan), bstt);
       }
       else
       {
-         bmshardware.SetBalancing(FlyingAdcBms::BAL_OFF);
+         bmshardware.SetBalancing(BmsAlgo::BalanceCommand::BAL_OFF);
       }
    }
    else
    {
       balanceCycles = totalBalanceCycles;
-      bstt = bmshardware.SetBalancing(FlyingAdcBms::BAL_OFF);
+      bstt = bmshardware.SetBalancing(BmsAlgo::BalanceCommand::BAL_OFF);
       Param::SetInt((Param::PARAM_NUM)(Param::u0cmd + chan), bstt);
    }
 
@@ -154,7 +141,7 @@ void BmsIO::ReadCellVoltages()
          gain *= 1 + Param::GetFloat(Param::correction15) / 1000000.0f;
 
       //Read ADC result before mux change
-      float udc = bmshardware.GetResult() * (gain / 1000.0f);
+      float udc = MCP3421::GetResult() * (gain / 1000.0f);
 
       Param::SetFloat((Param::PARAM_NUM)(Param::u0 + chan), udc);
 
@@ -184,8 +171,9 @@ void BmsIO::ReadCellVoltages()
          max = 0;
          sum = 0;
       }
-      //This instructs the SwitchMux task to change channel, with dead time
-      muxRequest = chan;
+      // This instructs the SwitchMux task to change channel, with dead time
+      // muxRequest = chan;
+      CellMux::MuxRequestChannel(chan);
    }
 }
 
@@ -270,22 +258,22 @@ void BmsIO::MeasureCurrent()
    }
 }
 
-void BmsIO::TestReadCellVoltage(int chan, FlyingAdcBms::BalanceCommand cmd)
+void BmsIO::TestReadCellVoltage(int chan, BmsAlgo::BalanceCommand cmd)
 {
-   float gain = Param::GetFloat(Param::gain);
+   // float gain = Param::GetFloat(Param::gain);
 
-   if (chan == 0)
-      gain *= 1 + Param::GetFloat(Param::correction0) / 1000000.0f;
-   else if (chan == 1)
-      gain *= 1 + Param::GetFloat(Param::correction1) / 1000000.0f;
-   else if (chan == 15)
-      gain *= 1 + Param::GetFloat(Param::correction15) / 1000000.0f;
+   // if (chan == 0)
+   //    gain *= 1 + Param::GetFloat(Param::correction0) / 1000000.0f;
+   // else if (chan == 1)
+   //    gain *= 1 + Param::GetFloat(Param::correction1) / 1000000.0f;
+   // else if (chan == 15)
+   //    gain *= 1 + Param::GetFloat(Param::correction15) / 1000000.0f;
 
-   float udc = bmshardware.GetResult() * (gain / 1000.0f);;
-   bmshardware.SelectChannel(chan);
-   bmshardware.SetBalancing(cmd);
-   bmshardware.StartAdc();
-   Param::SetFloat((Param::PARAM_NUM)(Param::u0 + chan), udc);
+   // float udc = CellMux::GetResult() * (gain / 1000.0f);;
+   // CellMux::SelectChannel(chan);
+   // bmshardware.SetBalancing(cmd);
+   // CellMux::StartAdc();
+   // Param::SetFloat((Param::PARAM_NUM)(Param::u0 + chan), udc);
 }
 
 void BmsIO::Accumulate(float sum, float min, float max, float avg)

@@ -287,3 +287,42 @@ float BmsAlgo::CalculateSoH(float lastSoc, float newSoc, float asDiff)
    }
    return soh;
 }
+
+/**
+ * @brief Determine if a cell requires charging or discharging to better balance the pack
+ */
+BmsAlgo::BalanceCommand BmsAlgo::SelectBalancing(BmsAlgo::BalanceMode balanceMode, float ucell, float umin, float umax, float uavg)
+{
+   float balanceTarget = 0;
+   BmsAlgo::BalanceCommand balanceCommand;
+
+   switch (balanceMode)
+   {
+   case BmsAlgo::BalanceMode::BAL_ADD: //maximum cell voltage is target when only adding
+      balanceTarget = umax;
+      break;
+   case BmsAlgo::BalanceMode::BAL_SUB: //minimum cell voltage is target when only dissipating
+      balanceTarget = umin;
+      break;
+   case BmsAlgo::BalanceMode::BAL_BOTH: //average cell voltage is target when dissipating and adding
+      balanceTarget = uavg;
+      break;
+   default: //not balancing
+      break;
+   }
+
+   if (ucell < (balanceTarget - 3) && ((balanceMode == BmsAlgo::BalanceMode::BAL_ADD) || (balanceMode == BmsAlgo::BalanceMode::BAL_BOTH)))
+   {
+      balanceCommand = BmsAlgo::BalanceCommand::BAL_CHARGE;
+   }
+   else if (ucell > (balanceTarget + 1) && ((balanceMode == BmsAlgo::BalanceMode::BAL_SUB) || (balanceMode == BmsAlgo::BalanceMode::BAL_BOTH)))
+   {
+      balanceCommand = BmsAlgo::BalanceCommand::BAL_DISCHARGE;
+   }
+   else
+   {
+      balanceCommand = BmsAlgo::BalanceCommand::BAL_OFF;
+   }
+
+   return balanceCommand;
+}

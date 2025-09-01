@@ -8,22 +8,14 @@ void MaxBms::Init()
 {
 }
 
-void MaxBms::MuxOff()
-{
-}
+//void Ms100Task() 
+//{
+    // Read either all or cycle through cell voltages
+    // Determine balance requirements
+    // Either set all or cycle through balancing
+//}
 
-void MaxBms::SelectChannel(uint8_t channel)
-{
-}
-
-void MaxBms::StartAdc()
-{
-}
-
-float MaxBms::GetResult()
-{
-}
-
-BmsHardware::BalanceStatus MaxBms::SetBalancing(BalanceCommand cmd)
-{
-}
+//void Ms2Task()
+//{
+    // Switch MUX
+//}
