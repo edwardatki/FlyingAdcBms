@@ -2,6 +2,7 @@
 #define BITBANGI2C_H
 
 #include <stdint.h>
+#include "digio.h"
 
 #define READ            true
 #define WRITE           false
@@ -15,6 +16,9 @@ class BitBangI2C
         static void BitBangI2CStop();
 
         static uint8_t i2cdelay;
+
+    private:
+        static DigIo scl_pin, do_pin, di_pin;
 };
 
 

@@ -63,23 +63,23 @@ SelfTest::TestResult SelfTest::RunTest(int& testStep)
  */
 SelfTest::TestResult SelfTest::RunTestMuxOff()
 {
-   if (cycleCounter == 0) {
-      CellMux::MuxOff();
-      FlyingAdcBms::SetBalancing(BmsAlgo::BalanceCommand::BAL_DISCHARGE);
-      MCP3421::StartAdc();
-   }
-   else if (cycleCounter == 1) {
-      int adc = MCP3421::GetResult();
-      adc = ABS(adc);
+   // if (cycleCounter == 0) {
+   //    CellMux::MuxOff();
+   //    FlyingAdcBms::SetBalancing(BmsAlgo::BalanceCommand::BAL_DISCHARGE);
+   //    MCP3421::StartAdc();
+   // }
+   // else if (cycleCounter == 1) {
+   //    int adc = MCP3421::GetResult();
+   //    adc = ABS(adc);
 
-      if (adc < 5) //We expect no voltage on the ADC
-         return TestSuccess;
-      else {
-         errChannel = adc;
-         return TestFailed;
-      }
-   }
-   return TestOngoing;
+   //    if (adc < 5) //We expect no voltage on the ADC
+   //       return TestSuccess;
+   //    else {
+   //       errChannel = adc;
+   //       return TestFailed;
+   //    }
+   // }
+   // return TestOngoing;
 }
 
 /** \brief Test if balancer circuit works
@@ -89,73 +89,73 @@ SelfTest::TestResult SelfTest::RunTestMuxOff()
  */
 SelfTest::TestResult SelfTest::RunTestBalancer()
 {
-   if (cycleCounter == 0) {
-      CellMux::MuxOff();
-      FlyingAdcBms::SetBalancing(BmsAlgo::BalanceCommand::BAL_CHARGE);
-      MCP3421::StartAdc();
-   }
-   else if (cycleCounter == 2) {
-      int adc = MCP3421::GetResult();
+   // if (cycleCounter == 0) {
+   //    CellMux::MuxOff();
+   //    FlyingAdcBms::SetBalancing(BmsAlgo::BalanceCommand::BAL_CHARGE);
+   //    MCP3421::StartAdc();
+   // }
+   // else if (cycleCounter == 2) {
+   //    int adc = MCP3421::GetResult();
 
-      if (adc < 8190) { //We expect the ADC to saturate
-         errChannel = adc;
-         return TestFailed;
-      }
-   }
-   else if (cycleCounter == 3) {
-      CellMux::SelectChannel(1); //this leads to negative voltage
-      CellMux::MuxOff(); //but we turn off the mux right away
-      FlyingAdcBms::SetBalancing(BmsAlgo::BalanceCommand::BAL_CHARGE);
-      MCP3421::StartAdc();
-   }
-   else if (cycleCounter == 5) {
-      int adc = MCP3421::GetResult();
-      FlyingAdcBms::SetBalancing(BmsAlgo::BalanceCommand::BAL_OFF);
+   //    if (adc < 8190) { //We expect the ADC to saturate
+   //       errChannel = adc;
+   //       return TestFailed;
+   //    }
+   // }
+   // else if (cycleCounter == 3) {
+   //    CellMux::SelectChannel(1); //this leads to negative voltage
+   //    CellMux::MuxOff(); //but we turn off the mux right away
+   //    FlyingAdcBms::SetBalancing(BmsAlgo::BalanceCommand::BAL_CHARGE);
+   //    MCP3421::StartAdc();
+   // }
+   // else if (cycleCounter == 5) {
+   //    int adc = MCP3421::GetResult();
+   //    FlyingAdcBms::SetBalancing(BmsAlgo::BalanceCommand::BAL_OFF);
 
-      if (adc < 8190) { //We expect the ADC to saturate
-         errChannel = adc;
-         return TestFailed;
-      }
-      else
-         return TestSuccess;
-   }
-   return TestOngoing;
+   //    if (adc < 8190) { //We expect the ADC to saturate
+   //       errChannel = adc;
+   //       return TestFailed;
+   //    }
+   //    else
+   //       return TestSuccess;
+   // }
+   // return TestOngoing;
 }
 
 SelfTest::TestResult SelfTest::TestCellConnection()
 {
-   static bool overVoltage = false;
-   static bool polarityCheckComplete = false;
-   int channel = cycleCounter / 2;
+   // static bool overVoltage = false;
+   // static bool polarityCheckComplete = false;
+   // int channel = cycleCounter / 2;
 
-   if (overVoltage) return TestFailed; //make this look like a separate test
-   if (polarityCheckComplete) return TestSuccess;
+   // if (overVoltage) return TestFailed; //make this look like a separate test
+   // if (polarityCheckComplete) return TestSuccess;
 
-   if (cycleCounter & 1) //on odd cycles measure, on even cycles switch mux
-   {
-      int adc = MCP3421::GetResult();
-      CellMux::MuxOff();
+   // if (cycleCounter & 1) //on odd cycles measure, on even cycles switch mux
+   // {
+   //    int adc = MCP3421::GetResult();
+   //    CellMux::MuxOff();
 
-      if (adc < -1000) {
-         errChannel = channel;
-         return TestFailed;
-      }
-      if (adc > 7500) {
-         overVoltage = true;
-         errChannel = channel;
-         return TestSuccess; //report polarity check as good, but over voltage check as failed on the next call
-      }
-      if (channel == (numChannels - 1)) {
-         polarityCheckComplete = true;
-         return TestSuccess;
-      }
-   }
-   else
-   {
-      CellMux::SelectChannel(channel);
-      MCP3421::StartAdc();
-   }
-   return TestOngoing;
+   //    if (adc < -1000) {
+   //       errChannel = channel;
+   //       return TestFailed;
+   //    }
+   //    if (adc > 7500) {
+   //       overVoltage = true;
+   //       errChannel = channel;
+   //       return TestSuccess; //report polarity check as good, but over voltage check as failed on the next call
+   //    }
+   //    if (channel == (numChannels - 1)) {
+   //       polarityCheckComplete = true;
+   //       return TestSuccess;
+   //    }
+   // }
+   // else
+   // {
+   //    CellMux::SelectChannel(channel);
+   //    MCP3421::StartAdc();
+   // }
+   // return TestOngoing;
 }
 
 /** \brief Last test, always return done

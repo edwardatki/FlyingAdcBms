@@ -31,31 +31,31 @@ void BitBangI2C::SendRecvI2C(uint8_t address, bool read, uint8_t* data, uint8_t 
 
 void BitBangI2C::BitBangI2CStart()
 {
-   DigIo::i2c_do.Clear(); //Generate start. First SDA low, then SCL
+   BitBangI2C::do_pin.Clear(); //Generate start. First SDA low, then SCL
    DELAY();
-   DigIo::i2c_scl.Clear();
+   BitBangI2C::scl_pin.Clear();
 }
 
 uint8_t BitBangI2C::BitBangI2CByte(uint8_t byte, bool ack)
 {
    uint8_t byteRead = 0;
 
-   DigIo::i2c_scl.Clear();
+   BitBangI2C::scl_pin.Clear();
    DELAY();
 
    for (int i = 16; i >= 0; i--)
    {
-      if (byte & 0x80 || (i < 1 && !ack)) DigIo::i2c_do.Set();
-      else DigIo::i2c_do.Clear();
+      if (byte & 0x80 || (i < 1 && !ack)) BitBangI2C::do_pin.Set();
+      else BitBangI2C::do_pin.Clear();
       DELAY();
-      DigIo::i2c_scl.Toggle();
+      BitBangI2C::scl_pin.Toggle();
       if (i & 1) {
          byte <<= 1; //get next bit at falling edge
       }
       else if (i > 0)
       {
          byteRead <<= 1;
-         byteRead |= DigIo::i2c_di.Get(); //Read data at rising edge
+         byteRead |= BitBangI2C::di_pin.Get(); //Read data at rising edge
       }
    }
    DELAY();
@@ -65,12 +65,12 @@ uint8_t BitBangI2C::BitBangI2CByte(uint8_t byte, bool ack)
 
 void BitBangI2C::BitBangI2CStop()
 {
-   DigIo::i2c_scl.Clear();
+   BitBangI2C::scl_pin.Clear();
    DELAY();
-   DigIo::i2c_do.Clear(); //data low
+   BitBangI2C::do_pin.Clear(); //data low
    DELAY();
-   DigIo::i2c_scl.Set();
+   BitBangI2C::scl_pin.Set();
    DELAY();
-   DigIo::i2c_do.Set(); //data high -> STOP
+   BitBangI2C::do_pin.Set(); //data high -> STOP
    DELAY();
 }

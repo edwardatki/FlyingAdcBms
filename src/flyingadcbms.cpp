@@ -31,11 +31,14 @@
 #define HBRIDGE_UOUTP_TO_GND_UOUTN_TO_5V 0xC
 #define HBRIDGE_UOUTP_TO_5V_UOUTN_TO_GND 0x3
 
-Adc FlyingAdcBms::adc = MCP3421();
+BitBangI2C i2c_interface = BitBangI2C();
+
+Adc FlyingAdcBms::adc = MCP3421(&i2c_interface, 0x68, MCP3421::Rate::RATE_60SPS_14BIT);
+CellMux FlyingAdcBms::mux = CellMux();
 
 void FlyingAdcBms::Ms2Task()
 {
-   CellMux::Ms2Task();
+   mux.Ms2Task();
 }
 
 FlyingAdcBms::BalanceStatus FlyingAdcBms::SetBalancing(BmsAlgo::BalanceCommand cmd)

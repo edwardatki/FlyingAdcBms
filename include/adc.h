@@ -4,8 +4,8 @@
 class Adc
 {
     public:
-        static void StartAdc();
-        static float GetResult();
+        void StartAdc();
+        float GetResult();
 };
 
 

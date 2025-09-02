@@ -35,7 +35,7 @@ void CellMux::Ms2Task()
    //t=4 ms: start ADC
    else if (startAdc)
    {
-      MCP3421::StartAdc();
+      // MCP3421::StartAdc();
       startAdc = false;
    }
    //t=21 ms: ADC conversion is finished

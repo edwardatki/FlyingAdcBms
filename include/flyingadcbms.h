@@ -21,6 +21,7 @@
 #include <stdint.h>
 #include "bmshardware.h"
 #include "adc.h"
+#include "cellmux.h"
 
 class FlyingAdcBms : public BmsHardware
 {
@@ -32,6 +33,7 @@ class FlyingAdcBms : public BmsHardware
       static void Ms100Task();
 
       static Adc adc;
+      static CellMux mux;
 
    protected:
 

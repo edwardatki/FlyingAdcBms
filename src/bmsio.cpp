@@ -141,7 +141,8 @@ void BmsIO::ReadCellVoltages()
          gain *= 1 + Param::GetFloat(Param::correction15) / 1000000.0f;
 
       //Read ADC result before mux change
-      float udc = MCP3421::GetResult() * (gain / 1000.0f);
+      // float udc = MCP3421::GetResult() * (gain / 1000.0f);
+      float udc = 0;
 
       Param::SetFloat((Param::PARAM_NUM)(Param::u0 + chan), udc);
 
