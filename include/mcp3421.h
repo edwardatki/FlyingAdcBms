@@ -11,8 +11,8 @@ class MCP3421 : public Adc
         enum class Rate : uint8_t { RATE_240SPS_12BIT=0x0, RATE_60SPS_14BIT=0x4, RATE_15SPS_16BIT=0x8 };
 
         MCP3421(BitBangI2C *_i2c_interface, uint8_t _address, Rate _rate) : i2c_interface(_i2c_interface), address(_address), rate(_rate) {};
-        void StartAdc();
-        float GetResult();
+        void StartAdc() override;
+        float GetResult() override;
     
     private:
         BitBangI2C *i2c_interface;

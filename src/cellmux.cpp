@@ -6,17 +6,16 @@
 #include "bitbangi2c.h"
 #include "mcp3421.h"
 
-#define DIO_ADDR        0x41
-
 uint8_t CellMux::selectedChannel = 0;
 uint8_t CellMux::previousChannel = 0;
 int CellMux::muxRequest = -1;
-void(*CellMux::readyCallback)();
+void(*CellMux::readyCallback)(uint8_t);
 
 /** \brief Mux control function. Must be called in 2 ms interval */
 void CellMux::Ms2Task()
 {
    static int channel = -1;
+   static int temp = -1;
    static bool startAdc = false;
 
    //t=0 ms: On a mux change request first completely turn off mux
@@ -30,13 +29,14 @@ void CellMux::Ms2Task()
    else if (channel >= 0)
    {
       CellMux::SelectChannel(channel);
+      temp = channel;
       channel = -1;
       startAdc = true;
    }
    //t=4 ms: start ADC
    else if (startAdc)
    {
-      if (readyCallback != nullptr) CellMux::readyCallback();
+      if (readyCallback != nullptr) CellMux::readyCallback(temp);
       startAdc = false;
    }
    //t=21 ms: ADC conversion is finished
@@ -53,8 +53,8 @@ void CellMux::MuxRequestChannel(uint8_t channel)
 
 void CellMux::Init()
 {
-   uint8_t data[] = { 0x3, 0x0 };
-   BitBangI2C::SendRecvI2C(DIO_ADDR, WRITE, data, 2);
+   // uint8_t data[] = { 0x3, 0x0 };
+   // BitBangI2C::SendRecvI2C(DIO_ADDR, WRITE, data, 2);
    gpio_set_mode(GPIOB, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_PUSHPULL, GPIO0);
 }
 
@@ -66,7 +66,7 @@ void CellMux::MuxOff()
 {
    //Turn off mux
    spi_xfer(SPI1, MUX_OFF);
-   SetBalancing(BAL_OFF);
+   // SetBalancing(BAL_OFF);
    gpio_clear(GPIOB, GPIO0);
 }
 

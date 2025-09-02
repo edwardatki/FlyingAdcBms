@@ -22,6 +22,7 @@
 #include "bmshardware.h"
 #include "adc.h"
 #include "cellmux.h"
+#include "pca9536.h"
 
 #define MAX_CELLS 108
 
@@ -39,12 +40,13 @@ class FlyingAdcBms : public BmsHardware
 
    private:
       static BalanceStatus SetBalancing(BmsAlgo::BalanceCommand cmd);
-      static void MuxReadyCallback();
+      static void MuxReadyCallback(uint8_t channel);
 
       static Adc adc;
       static CellMux mux;
+      static PCA9536 hbridge;
 
-      // static uint8_t selectedChannel, previousChannel;
+      static uint8_t selectedChannel, previousChannel;
 };
 
 #endif // FLYINGADCBMS_H
