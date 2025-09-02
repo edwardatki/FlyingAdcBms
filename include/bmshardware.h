@@ -6,7 +6,7 @@
 class BmsHardware
 {
     public:
-        enum BalanceStatus  { STT_OFF, STT_DISCHARGE, STT_CHARGEPOS, STT_CHARGENEG };
+        enum BalanceStatus { STT_OFF, STT_DISCHARGE, STT_CHARGEPOS, STT_CHARGENEG };
 
         static void Ms2Task();
         static void Ms25Task();

@@ -59,14 +59,16 @@ void FlyingAdcBms::Ms2Task()
 /** \brief Read cell voltages and set balancing. Must be called in 25 ms interval */
 void FlyingAdcBms::Ms25Task()
 {
+   BmsAlgo::BalanceMode balMode = (BmsAlgo::BalanceMode)Param::GetInt(Param::balmode);
+   bool do_balancing = (Param::GetInt(Param::opmode) == BmsFsm::IDLE)
+                     && (Param::GetFloat(Param::uavg) > Param::GetFloat(Param::ubalance))
+                     && (balMode != BmsAlgo::BalanceMode::BAL_NONE);
+
    const int totalBalanceCycles = 30;
    static uint8_t chan = 0, balanceCycles = 0;
    static float sum = 0, min = 8000, max = 0;
-   int balMode = Param::GetInt(Param::balmode);
-   bool balance = Param::GetInt(Param::opmode) == BmsFsm::IDLE && Param::GetFloat(Param::uavg) > Param::GetFloat(Param::ubalance) && BAL_OFF != balMode;
-   FlyingAdcBms::BalanceStatus bstt;
 
-   if (balance)
+   if (do_balancing)
    {
       if (balanceCycles == 0)
       {
@@ -80,13 +82,13 @@ void FlyingAdcBms::Ms25Task()
       if (balanceCycles > 0 && balanceCycles < (totalBalanceCycles - 1))
       {
          BmsAlgo::BalanceCommand balanceCommand = BmsAlgo::SelectBalancing(
-            (BmsAlgo::BalanceMode)Param::GetInt(Param::balmode), 
+            balMode,
             Param::GetFloat((Param::PARAM_NUM)(Param::u0 + chan)),
             Param::GetFloat(Param::umin),
             Param::GetFloat(Param::umax),
             Param::GetFloat(Param::uavg)
          );
-         bstt = FlyingAdcBms::SetBalancing(balanceCommand);
+         FlyingAdcBms::BalanceStatus bstt = FlyingAdcBms::SetBalancing(balanceCommand);
          Param::SetInt((Param::PARAM_NUM)(Param::u0cmd + chan), bstt);
       }
       else
@@ -97,7 +99,7 @@ void FlyingAdcBms::Ms25Task()
    else
    {
       balanceCycles = totalBalanceCycles;
-      bstt = FlyingAdcBms::SetBalancing(BmsAlgo::BalanceCommand::BAL_OFF);
+      FlyingAdcBms::BalanceStatus bstt = FlyingAdcBms::SetBalancing(BmsAlgo::BalanceCommand::BAL_OFF);
       Param::SetInt((Param::PARAM_NUM)(Param::u0cmd + chan), bstt);
    }
 
@@ -117,8 +119,12 @@ void FlyingAdcBms::Ms25Task()
 
       //Read ADC result before mux change
       float udc = adc.GetResult() * (gain / 1000.0f);
+      
+      //Odd channels are connected to ADC with reversed polarity
+      //TODO: Check this has the same behavior as checking previousChannel did
+      if (chan & 1) udc = -udc;
 
-      FlyingAdcBms::cell_voltages[chan] = udc;
+      // FlyingAdcBms::cell_voltages[chan] = udc;
       Param::SetFloat((Param::PARAM_NUM)(Param::u0 + chan), udc);
 
       min = MIN(min, udc);
@@ -148,6 +154,7 @@ void FlyingAdcBms::Ms25Task()
          max = 0;
          sum = 0;
       }
+      
       // This instructs the SwitchMux task to change channel, with dead time
       mux.MuxRequestChannel(chan);
    }

@@ -50,6 +50,7 @@ void CellMux::MuxRequestChannel(uint8_t channel)
 }
 
 #ifdef HWV1
+
 void CellMux::Init()
 {
    uint8_t data[] = { 0x3, 0x0 };
@@ -76,7 +77,9 @@ void CellMux::SelectChannel(uint8_t channel)
    //Select MUX channel with deadtime insertion
    spi_xfer(SPI1, MUX_SELECT | channel);
 }
+
 #else
+
 void CellMux::Init()
 {
    // uint8_t data[2] = { 0x3 /* pin mode register */, 0x0 /* All pins as output */};
@@ -107,4 +110,5 @@ void CellMux::SelectChannel(uint8_t channel)
    uint8_t oddMuxWord = (channel / 2) << 4;
    gpio_set(GPIOB, evenMuxWord | oddMuxWord | GPIO7);
 }
+
 #endif // V1HW

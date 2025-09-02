@@ -33,18 +33,18 @@ class FlyingAdcBms : public BmsHardware
       static void Ms25Task();
       static void Ms100Task();
 
-      static BalanceStatus SetBalancing(BmsAlgo::BalanceCommand cmd);
-
-      static float cell_voltages[MAX_CELLS];
-      static float umax, umin, uavg;
+      // static float cell_voltages[MAX_CELLS];
+      // static FlyingAdcBms::BalanceStatus cell_balance_status[MAX_CELLS];
+      // static float umax, umin, uavg;
 
    private:
+      static BalanceStatus SetBalancing(BmsAlgo::BalanceCommand cmd);
       static void MuxReadyCallback();
 
       static Adc adc;
       static CellMux mux;
 
-      static uint8_t selectedChannel, previousChannel;
+      // static uint8_t selectedChannel, previousChannel;
 };
 
 #endif // FLYINGADCBMS_H

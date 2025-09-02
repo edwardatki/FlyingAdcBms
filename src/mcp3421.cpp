@@ -18,8 +18,6 @@ float MCP3421::GetResult()
    this->i2c_interface->SendRecvI2C(this->address, READ, data, 3);
    int32_t adc = (((int16_t)(data[0] << 8)) + data[1]);
    float result = adc;
-   //Odd channels are connected to ADC with reversed polarity
-//    if (previousChannel & 1) result = -result;
 
    return result;
 }
