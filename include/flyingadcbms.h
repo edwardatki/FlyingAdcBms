@@ -23,21 +23,27 @@
 #include "adc.h"
 #include "cellmux.h"
 
+#define MAX_CELLS 108
+
 class FlyingAdcBms : public BmsHardware
 {
    public:
-      static BalanceStatus SetBalancing(BmsAlgo::BalanceCommand cmd);
-
+      static void Init();
       static void Ms2Task();
       static void Ms25Task();
       static void Ms100Task();
 
+      static BalanceStatus SetBalancing(BmsAlgo::BalanceCommand cmd);
+
+      static float cell_voltages[MAX_CELLS];
+      static float umax, umin, uavg;
+
+   private:
+      static void MuxReadyCallback();
+
       static Adc adc;
       static CellMux mux;
 
-   protected:
-
-   private:
       static uint8_t selectedChannel, previousChannel;
 };
 

@@ -53,129 +53,7 @@ void BmsIO::Init()
 
 void BmsIO::ReadCellVoltages()
 {
-   const int totalBalanceCycles = 30;
-   static uint8_t chan = 0, balanceCycles = 0;
-   static float sum = 0, min = 8000, max = 0;
-   int balMode = Param::GetInt(Param::balmode);
-   bool balance = Param::GetInt(Param::opmode) == BmsFsm::IDLE && Param::GetFloat(Param::uavg) > Param::GetFloat(Param::ubalance) && BAL_OFF != balMode;
-   FlyingAdcBms::BalanceStatus bstt;
-
-   if (balance)
-   {
-      if (balanceCycles == 0)
-      {
-         balanceCycles = totalBalanceCycles; //this leads to switching to next channel below
-      }
-      else
-      {
-         balanceCycles--;
-      }
-
-      if (balanceCycles > 0 && balanceCycles < (totalBalanceCycles - 1))
-      {
-         // float udc = Param::GetFloat((Param::PARAM_NUM)(Param::u0 + chan));
-         // float balanceTarget = 0;
-
-         // switch (balMode)
-         // {
-         // case BAL_ADD: //maximum cell voltage is target when only adding
-         //    balanceTarget = Param::GetFloat(Param::umax);
-         //    break;
-         // case BAL_DIS: //minimum cell voltage is target when only dissipating
-         //    balanceTarget = Param::GetFloat(Param::umin);
-         //    break;
-         // case BAL_BOTH: //average cell voltage is target when dissipating and adding
-         //    balanceTarget = Param::GetFloat(Param::uavg);
-         //    break;
-         // default: //not balancing
-         //    break;
-         // }
-
-         // if (udc < (balanceTarget - 3) && (balMode & BAL_ADD))
-         // {
-         //    bstt = bmshardware.SetBalancing(FlyingAdcBms::BAL_CHARGE);
-         // }
-         // else if (udc > (balanceTarget + 1) && (balMode & BAL_DIS))
-         // {
-         //    bstt = bmshardware.SetBalancing(FlyingAdcBms::BAL_DISCHARGE);
-         // }
-         // else
-         // {
-         //    bstt = bmshardware.SetBalancing(FlyingAdcBms::BAL_OFF);
-         //    balanceCycles = 0;
-         // }
-         BmsAlgo::BalanceCommand balanceCommand = BmsAlgo::SelectBalancing(
-            (BmsAlgo::BalanceMode)Param::GetInt(Param::balmode), 
-            Param::GetFloat((Param::PARAM_NUM)(Param::u0 + chan)),
-            Param::GetFloat(Param::umin),
-            Param::GetFloat(Param::umax),
-            Param::GetFloat(Param::uavg)
-         );
-         bstt = bmshardware.SetBalancing(balanceCommand);
-         Param::SetInt((Param::PARAM_NUM)(Param::u0cmd + chan), bstt);
-      }
-      else
-      {
-         bmshardware.SetBalancing(BmsAlgo::BalanceCommand::BAL_OFF);
-      }
-   }
-   else
-   {
-      balanceCycles = totalBalanceCycles;
-      bstt = bmshardware.SetBalancing(BmsAlgo::BalanceCommand::BAL_OFF);
-      Param::SetInt((Param::PARAM_NUM)(Param::u0cmd + chan), bstt);
-   }
-
-   //Read cell voltage when balancing is turned off
-   if (balanceCycles == totalBalanceCycles)
-   {
-      float gain = Param::GetFloat(Param::gain);
-      int numChan = Param::GetInt(Param::numchan);
-      bool even = (chan & 1) == 0;
-
-      if (chan == 0)
-         gain *= 1 + Param::GetFloat(Param::correction0) / 1000000.0f;
-      else if (chan == 1)
-         gain *= 1 + Param::GetFloat(Param::correction1) / 1000000.0f;
-      else if (chan == 15)
-         gain *= 1 + Param::GetFloat(Param::correction15) / 1000000.0f;
-
-      //Read ADC result before mux change
-      // float udc = MCP3421::GetResult() * (gain / 1000.0f);
-      float udc = 0;
-
-      Param::SetFloat((Param::PARAM_NUM)(Param::u0 + chan), udc);
-
-      min = MIN(min, udc);
-      max = MAX(max, udc);
-      sum += udc;
-
-      //First we sweep across all even channels: 0, 2, 4,...
-      if (even && (chan + 2) < numChan)
-         chan += 2;
-      //After reaching the furthest even channel (say 12) we either change over to a higher odd channel
-      else if (even && (chan + 1) < numChan)
-         chan++;
-      //or lower odd channel
-      else if (even)
-         chan--;
-      //Now we sweep across all odd channels until we reach 1
-      else if (chan > 1)
-         chan -= 2;
-      //We have now reached chan 1. Accumulate values and restart at chan 0
-      else
-      {
-         chan = 0;
-         Accumulate(sum, min, max, sum / numChan);
-
-         min = 8000;
-         max = 0;
-         sum = 0;
-      }
-      // This instructs the SwitchMux task to change channel, with dead time
-      // muxRequest = chan;
-      CellMux::MuxRequestChannel(chan);
-   }
+   bmshardware.Ms25Task();
 }
 
 void BmsIO::ReadTemperatures()
@@ -251,7 +129,6 @@ void BmsIO::MeasureCurrent()
          samples = 0;
          idcavg = 0;
 
-         //BmsCalculation::SetCharge(chargein, chargeout);
          Param::SetFixed(Param::chargein, chargein);
          Param::SetFixed(Param::chargeout, chargeout);
       }

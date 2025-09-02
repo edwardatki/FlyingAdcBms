@@ -12,7 +12,7 @@ class CellMux
 
         static void Ms2Task();
 
-        static bool ready;
+        static void(*readyCallback)();
 
     private:
         static void SelectChannel(uint8_t channel);

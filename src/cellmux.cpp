@@ -11,6 +11,7 @@
 uint8_t CellMux::selectedChannel = 0;
 uint8_t CellMux::previousChannel = 0;
 int CellMux::muxRequest = -1;
+void(*CellMux::readyCallback)();
 
 /** \brief Mux control function. Must be called in 2 ms interval */
 void CellMux::Ms2Task()
@@ -35,7 +36,7 @@ void CellMux::Ms2Task()
    //t=4 ms: start ADC
    else if (startAdc)
    {
-      // MCP3421::StartAdc();
+      if (readyCallback != nullptr) CellMux::readyCallback();
       startAdc = false;
    }
    //t=21 ms: ADC conversion is finished
@@ -78,13 +79,10 @@ void CellMux::SelectChannel(uint8_t channel)
 #else
 void CellMux::Init()
 {
-   uint8_t data[2] = { 0x3 /* pin mode register */, 0x0 /* All pins as output */};
-   BitBangI2C::SendRecvI2C(DIO_ADDR, WRITE, data, 2);
+   // uint8_t data[2] = { 0x3 /* pin mode register */, 0x0 /* All pins as output */};
+   // BitBangI2C::SendRecvI2C(DIO_ADDR, WRITE, data, 2);
    gpio_clear(GPIOB, 255);
    gpio_set_mode(GPIOB, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_PUSHPULL, 255);
-
-   if (hwRev == HW_23 || hwRev == HW_24)
-      BitBangI2C::i2cdelay = 5;
 }
 
 void CellMux::MuxOff()

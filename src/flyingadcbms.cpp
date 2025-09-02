@@ -21,9 +21,12 @@
 #include "bmsalgo.h"
 #include "flyingadcbms.h"
 #include "digio.h"
+#include "digio_prj.h"
 #include "hwdefs.h"
 #include "cellmux.h"
 #include "mcp3421.h"
+#include "params.h"
+#include "bmsfsm.h"
 
 #define HBRIDGE_DISCHARGE_VIA_LOWSIDE    0xF
 #define HBRIDGE_DISCHARGE_VIA_HIGHSIDE   0x0
@@ -31,14 +34,123 @@
 #define HBRIDGE_UOUTP_TO_GND_UOUTN_TO_5V 0xC
 #define HBRIDGE_UOUTP_TO_5V_UOUTN_TO_GND 0x3
 
-BitBangI2C i2c_interface = BitBangI2C();
+BitBangI2C i2c_interface = BitBangI2C(&DigIo::i2c_scl, &DigIo::i2c_do, &DigIo::i2c_di);
 
 Adc FlyingAdcBms::adc = MCP3421(&i2c_interface, 0x68, MCP3421::Rate::RATE_60SPS_14BIT);
 CellMux FlyingAdcBms::mux = CellMux();
 
+void FlyingAdcBms::Init() {
+   if (hwRev == HW_23 || hwRev == HW_24) i2c_interface.delay = 5;
+   else i2c_interface.delay = 30;
+   
+   mux.readyCallback = &FlyingAdcBms::MuxReadyCallback;
+}
+
+void FlyingAdcBms::MuxReadyCallback() {
+   adc.StartAdc();
+}
+
 void FlyingAdcBms::Ms2Task()
 {
    mux.Ms2Task();
+}
+
+
+/** \brief Read cell voltages and set balancing. Must be called in 25 ms interval */
+void FlyingAdcBms::Ms25Task()
+{
+   const int totalBalanceCycles = 30;
+   static uint8_t chan = 0, balanceCycles = 0;
+   static float sum = 0, min = 8000, max = 0;
+   int balMode = Param::GetInt(Param::balmode);
+   bool balance = Param::GetInt(Param::opmode) == BmsFsm::IDLE && Param::GetFloat(Param::uavg) > Param::GetFloat(Param::ubalance) && BAL_OFF != balMode;
+   FlyingAdcBms::BalanceStatus bstt;
+
+   if (balance)
+   {
+      if (balanceCycles == 0)
+      {
+         balanceCycles = totalBalanceCycles; //this leads to switching to next channel below
+      }
+      else
+      {
+         balanceCycles--;
+      }
+
+      if (balanceCycles > 0 && balanceCycles < (totalBalanceCycles - 1))
+      {
+         BmsAlgo::BalanceCommand balanceCommand = BmsAlgo::SelectBalancing(
+            (BmsAlgo::BalanceMode)Param::GetInt(Param::balmode), 
+            Param::GetFloat((Param::PARAM_NUM)(Param::u0 + chan)),
+            Param::GetFloat(Param::umin),
+            Param::GetFloat(Param::umax),
+            Param::GetFloat(Param::uavg)
+         );
+         bstt = FlyingAdcBms::SetBalancing(balanceCommand);
+         Param::SetInt((Param::PARAM_NUM)(Param::u0cmd + chan), bstt);
+      }
+      else
+      {
+         FlyingAdcBms::SetBalancing(BmsAlgo::BalanceCommand::BAL_OFF);
+      }
+   }
+   else
+   {
+      balanceCycles = totalBalanceCycles;
+      bstt = FlyingAdcBms::SetBalancing(BmsAlgo::BalanceCommand::BAL_OFF);
+      Param::SetInt((Param::PARAM_NUM)(Param::u0cmd + chan), bstt);
+   }
+
+   //Read cell voltage when balancing is turned off (at start of balancing cycles)
+   if (balanceCycles == totalBalanceCycles)
+   {
+      float gain = Param::GetFloat(Param::gain);
+      int numChan = Param::GetInt(Param::numchan);
+      bool even = (chan & 1) == 0;
+
+      if (chan == 0)
+         gain *= 1 + Param::GetFloat(Param::correction0) / 1000000.0f;
+      else if (chan == 1)
+         gain *= 1 + Param::GetFloat(Param::correction1) / 1000000.0f;
+      else if (chan == 15)
+         gain *= 1 + Param::GetFloat(Param::correction15) / 1000000.0f;
+
+      //Read ADC result before mux change
+      float udc = adc.GetResult() * (gain / 1000.0f);
+
+      FlyingAdcBms::cell_voltages[chan] = udc;
+      Param::SetFloat((Param::PARAM_NUM)(Param::u0 + chan), udc);
+
+      min = MIN(min, udc);
+      max = MAX(max, udc);
+      sum += udc;
+
+      //First we sweep across all even channels: 0, 2, 4,...
+      if (even && (chan + 2) < numChan)
+         chan += 2;
+      //After reaching the furthest even channel (say 12) we either change over to a higher odd channel
+      else if (even && (chan + 1) < numChan)
+         chan++;
+      //or lower odd channel
+      else if (even)
+         chan--;
+      //Now we sweep across all odd channels until we reach 1
+      else if (chan > 1)
+         chan -= 2;
+      //We have now reached chan 1. Accumulate values and restart at chan 0
+      else
+      {
+         chan = 0;
+         // Accumulate(sum, min, max, sum / numChan);
+         // TODO: Callback to BmsIO
+
+         min = 8000;
+         max = 0;
+         sum = 0;
+      }
+      // This instructs the SwitchMux task to change channel, with dead time
+      mux.MuxRequestChannel(chan);
+   }
 }
 
 FlyingAdcBms::BalanceStatus FlyingAdcBms::SetBalancing(BmsAlgo::BalanceCommand cmd)

@@ -10,15 +10,17 @@
 class BitBangI2C
 {
     public:
-        static void SendRecvI2C(uint8_t address, bool read, uint8_t* data, uint8_t len);
-        static void BitBangI2CStart();
-        static uint8_t BitBangI2CByte(uint8_t byte, bool ack);
-        static void BitBangI2CStop();
+        BitBangI2C(DigIo *_scl_pin, DigIo *_do_pin, DigIo *_di_pin) : scl_pin(_scl_pin), do_pin(_do_pin), di_pin(_di_pin) {};
 
-        static uint8_t i2cdelay;
+        void SendRecvI2C(uint8_t address, bool read, uint8_t* data, uint8_t len);
+        void BitBangI2CStart();
+        uint8_t BitBangI2CByte(uint8_t byte, bool ack);
+        void BitBangI2CStop();
+
+        uint8_t delay = 30;
 
     private:
-        static DigIo scl_pin, do_pin, di_pin;
+        DigIo *scl_pin, *do_pin, *di_pin;
 };
 
 
