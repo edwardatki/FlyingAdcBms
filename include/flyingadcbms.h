@@ -24,7 +24,7 @@
 #include "cellmux.h"
 #include "pca9536.h"
 
-#define MAX_CELLS 108
+// #define MAX_CELLS 16
 
 class FlyingAdcBms : public BmsHardware
 {

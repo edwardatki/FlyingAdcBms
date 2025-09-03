@@ -16,6 +16,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+#if defined HW_FLYING_ADC_V1 || defined HW_FLYING_ADC_V2 //To prevent errors as hardware specific parameters will be missing
+
 #include <libopencm3/stm32/gpio.h>
 #include <libopencm3/stm32/spi.h>
 #include "bmsalgo.h"
@@ -47,12 +49,15 @@ void FlyingAdcBms::Init() {
    if (hwRev == HW_23 || hwRev == HW_24) i2c_interface.delay = 5;
    else i2c_interface.delay = 30;
    
+   mux.MuxOff();
    mux.readyCallback = &FlyingAdcBms::MuxReadyCallback;
+
+   FlyingAdcBms::SetBalancing(BmsAlgo::BalanceCommand::BAL_OFF);
 }
 
 void FlyingAdcBms::MuxReadyCallback(uint8_t channel) {
-   adc.StartAdc();
    selectedChannel = channel;
+   adc.StartAdc();
 }
 
 void FlyingAdcBms::Ms2Task()
@@ -160,48 +165,40 @@ void FlyingAdcBms::Ms25Task()
          sum = 0;
       }
       
-      // This instructs the SwitchMux task to change channel, with dead time
+      // This instructs the mux 2ms task to change channel, with dead time
       mux.MuxRequestChannel(chan);
    }
 }
 
 FlyingAdcBms::BalanceStatus FlyingAdcBms::SetBalancing(BmsAlgo::BalanceCommand cmd)
 {
-   BalanceStatus stt = STT_OFF;
-   // uint8_t data[2] = { 0x3 /* pin mode register */, 0x0 /* All pins as output */};
-   // SendRecvI2C(DIO_ADDR, WRITE, data, 2);
    hbridge.SetAsOutputs();
 
-   // data[0] = 0x1; //output port register
-
+   BalanceStatus stt = STT_OFF;
    uint8_t outputs;
+
    switch (cmd)
    {
    case BmsAlgo::BalanceCommand::BAL_OFF:
-      // data[1] = HBRIDGE_ALL_OFF;
       outputs = HBRIDGE_ALL_OFF;
       break;
    case BmsAlgo::BalanceCommand::BAL_DISCHARGE:
       if (hwRev == HW_24) //has inline resistors on all channels
-         // data[1] = HBRIDGE_DISCHARGE_VIA_HIGHSIDE;
          outputs = HBRIDGE_DISCHARGE_VIA_HIGHSIDE;
       else
-         // data[1] = HBRIDGE_DISCHARGE_VIA_LOWSIDE;
          outputs = HBRIDGE_DISCHARGE_VIA_LOWSIDE;
       stt = STT_DISCHARGE;
       break;
    case BmsAlgo::BalanceCommand::BAL_CHARGE:
       //odd channel: connect UOUTP to GNDA and UOUTN to VCCA
       //even channel: connect UOUTP to VCCA and UOUTN to GNDA
-      // data[1] = selectedChannel & 1 ? HBRIDGE_UOUTP_TO_GND_UOUTN_TO_5V : HBRIDGE_UOUTP_TO_5V_UOUTN_TO_GND;
       outputs = selectedChannel & 1 ? HBRIDGE_UOUTP_TO_GND_UOUTN_TO_5V : HBRIDGE_UOUTP_TO_5V_UOUTN_TO_GND;
       stt = selectedChannel & 1 ? STT_CHARGENEG : STT_CHARGEPOS;
    }
 
-   // SendRecvI2C(DIO_ADDR, WRITE, data, 2);
    hbridge.WriteOutputs(outputs);
 
    return stt;
 }
 
-
+#endif // defined(HW_V1) || defined(HW_V2)

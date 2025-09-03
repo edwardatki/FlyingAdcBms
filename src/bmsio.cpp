@@ -28,27 +28,27 @@
 #include "mcp3421.h"
 
 // BmsHardware bmshardware = FlyingAdcBms();
-FlyingAdcBms bmshardware = FlyingAdcBms();
+// FlyingAdcBms bmshardware = FlyingAdcBms();
 
-// #ifdef HWV1
-//     #include "flyingadcbms.h"
-//     static FlyingAdcBms bmshardware;
-// #elif HWV2
-//     #include "flyingadcbms.h"
-//     static FlyingAdcBms bmshardware;
-// #elif HW_MAX
-//     #include "maxbms.h"
-//     static MaxBms bmshardware;
-// #else
-//     #error "Unknown hardware platform"
-// #endif
+#ifdef HW_FLYING_ADC_V1
+    #include "flyingadcbms.h"
+    BmsHardware BmsIO::bmshardware = FlyingAdcBms();
+#elif HW_FLYING_ADC_V2
+    #include "flyingadcbms.h"
+    BmsHardware BmsIO::bmshardware = FlyingAdcBms();
+#elif HW_MAX17841B
+    #include "maxbms.h"
+    BmsHardware BmsIO::bmshardware = MaxBms();
+#else
+    #error "Unknown hardware platform"
+#endif
 
 BmsFsm* BmsIO::bmsFsm;
 // int BmsIO::muxRequest = -1;
 
 void BmsIO::Init() 
 {
-   // bmshardware.Init();
+   bmshardware.Init();
 }
 
 void BmsIO::ReadCellVoltages()

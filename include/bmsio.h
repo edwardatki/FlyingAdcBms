@@ -37,6 +37,8 @@ class BmsIO
       static void MeasureCurrent();
       static void SetBmsFsm(BmsFsm* b) { bmsFsm = b; }
 
+      static BmsHardware bmshardware;
+
    private:
       static void Accumulate(float sum, float min, float max, float avg);
       static BmsFsm* bmsFsm;

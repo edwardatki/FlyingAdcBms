@@ -49,12 +49,10 @@ void CellMux::MuxRequestChannel(uint8_t channel)
    muxRequest = channel;
 }
 
-#ifdef HWV1
+#ifdef HW_FLYING_ADC_V1
 
 void CellMux::Init()
 {
-   // uint8_t data[] = { 0x3, 0x0 };
-   // BitBangI2C::SendRecvI2C(DIO_ADDR, WRITE, data, 2);
    gpio_set_mode(GPIOB, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_PUSHPULL, GPIO0);
 }
 
@@ -66,7 +64,6 @@ void CellMux::MuxOff()
 {
    //Turn off mux
    spi_xfer(SPI1, MUX_OFF);
-   // SetBalancing(BAL_OFF);
    gpio_clear(GPIOB, GPIO0);
 }
 
@@ -111,4 +108,4 @@ void CellMux::SelectChannel(uint8_t channel)
    gpio_set(GPIOB, evenMuxWord | oddMuxWord | GPIO7);
 }
 
-#endif // V1HW
+#endif // HW_FLYING_ADC_V1

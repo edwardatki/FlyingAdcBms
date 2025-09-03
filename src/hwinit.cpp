@@ -128,9 +128,9 @@ void rtc_setup()
 
 HwRev detect_hw()
 {
-   #ifdef HWV1
+   #ifdef HW_FLYING_ADC_V1
    return HW_1X;
-   #endif // HWV1
+   #endif // HW_FLYING_ADC_V1
 
    HwRev hwrev = HW_UNKNOWN;
    //configure as input with pull-up

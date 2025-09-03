@@ -11,6 +11,7 @@ class PCA9536
         void WriteOutputs(uint8_t value);
 
     private:
+
         BitBangI2C *i2c_interface;
         uint8_t address;
 };

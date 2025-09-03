@@ -252,10 +252,10 @@ extern "C" int main(void)
    hwRev = detect_hw();
    ANA_IN_CONFIGURE(ANA_IN_LIST);
    DIG_IO_CONFIGURE(DIG_IO_LIST);
-   #ifdef HWV1
+   #ifdef HW_FLYING_ADC_V1
    spi_setup(); //in case we use V1 hardware
    DigIo::led_out.Configure(GPIOB, GPIO1, PinMode::OUTPUT);
-   #endif // HWV1
+   #endif // HW_FLYING_ADC_V1
    DigIo::selfena_out.Set();
    AnaIn::Start(); //Starts background ADC conversion via DMA
    write_bootloader_pininit(); //Instructs boot loader to initialize certain pins
@@ -285,7 +285,8 @@ extern "C" int main(void)
 
    s.AddTask(BmsIO::MeasureCurrent, 5);
    s.AddTask(ReadCellVoltages, 25);
-   s.AddTask(FlyingAdcBms::Ms2Task, 2); //This must added after ReadCellVoltages() to avoid an additional 2 ms delay
+   // s.AddTask(FlyingAdcBms::Ms2Task, 2); //This must added after ReadCellVoltages() to avoid an additional 2 ms delay
+   s.AddTask(BmsIO::bmshardware.Ms2Task, 2);
    s.AddTask(Ms100Task, 100);
 
    Param::SetInt(Param::hwrev, hwRev);

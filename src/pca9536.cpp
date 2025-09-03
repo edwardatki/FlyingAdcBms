@@ -1,7 +1,9 @@
 #include "pca9536.h"
 #include "bitbangi2c.h"
 
+#define INPUTS_REGISTER 0x00
 #define OUTPUTS_REGISTER 0x01
+#define POLARITY_REGISTER 0x02
 #define PINMODE_REGISTER 0x03
 
 void PCA9536::SetAsOutputs() {

@@ -15,7 +15,7 @@
 			<SilentBuild command="$make -s -f $makefile $target" />
 		</MakeCommands>
 		<Build>
-			<Target title="HWV2">
+			<Target title="HW_FLYING_ADC_V2">
 				<Option output="stm32_bms" prefix_auto="1" extension_auto="1" />
 				<Option object_output="obj/Release/" />
 				<Option type="1" />
@@ -33,7 +33,7 @@
 					<SilentBuild command="make &gt; $(CMD_NULL)" />
 				</MakeCommands>
 			</Target>
-			<Target title="HWV1">
+			<Target title="HW_FLYING_ADC_V1">
 				<Option output="stm32_bms" prefix_auto="0" extension_auto="0" />
 				<Option object_output="obj/Release/" />
 				<Option type="1" />
@@ -43,12 +43,12 @@
 					<Add directory="libopeninv/include" />
 				</Compiler>
 				<MakeCommands>
-					<Build command="HW=HWV1 make" />
+					<Build command="HW=HW_FLYING_ADC_V1 make" />
 					<CompileFile command="$make -f  $file " />
 					<Clean command="make clean " />
 					<DistClean command="$make -f $makefile distclean$target" />
 					<AskRebuildNeeded command="$make -q" />
-					<SilentBuild command="HW=HWV1 make &gt; $(CMD_NULL)" />
+					<SilentBuild command="HW=HW_FLYING_ADC_V1 make &gt; $(CMD_NULL)" />
 				</MakeCommands>
 			</Target>
 			<Target title="Test">
@@ -62,280 +62,280 @@
 			</Target>
 		</Build>
 		<Unit filename="Makefile">
-			<Option target="HWV2" />
-			<Option target="HWV1" />
+			<Option target="HW_FLYING_ADC_V2" />
+			<Option target="HW_FLYING_ADC_V1" />
 		</Unit>
 		<Unit filename="include/anain_prj.h">
-			<Option target="HWV2" />
-			<Option target="HWV1" />
+			<Option target="HW_FLYING_ADC_V2" />
+			<Option target="HW_FLYING_ADC_V1" />
 		</Unit>
 		<Unit filename="include/bmsalgo.h">
-			<Option target="HWV2" />
-			<Option target="HWV1" />
+			<Option target="HW_FLYING_ADC_V2" />
+			<Option target="HW_FLYING_ADC_V1" />
 		</Unit>
 		<Unit filename="include/bmsfsm.h">
-			<Option target="HWV2" />
-			<Option target="HWV1" />
+			<Option target="HW_FLYING_ADC_V2" />
+			<Option target="HW_FLYING_ADC_V1" />
 		</Unit>
 		<Unit filename="include/bmsio.h">
-			<Option target="HWV2" />
-			<Option target="HWV1" />
+			<Option target="HW_FLYING_ADC_V2" />
+			<Option target="HW_FLYING_ADC_V1" />
 		</Unit>
 		<Unit filename="include/digio_prj.h">
-			<Option target="HWV2" />
-			<Option target="HWV1" />
+			<Option target="HW_FLYING_ADC_V2" />
+			<Option target="HW_FLYING_ADC_V1" />
 		</Unit>
 		<Unit filename="include/errormessage_prj.h">
-			<Option target="HWV2" />
-			<Option target="HWV1" />
+			<Option target="HW_FLYING_ADC_V2" />
+			<Option target="HW_FLYING_ADC_V1" />
 		</Unit>
 		<Unit filename="include/flyingadcbms.h">
-			<Option target="HWV2" />
-			<Option target="HWV1" />
+			<Option target="HW_FLYING_ADC_V2" />
+			<Option target="HW_FLYING_ADC_V1" />
 		</Unit>
 		<Unit filename="include/hwdefs.h">
-			<Option target="HWV2" />
-			<Option target="HWV1" />
+			<Option target="HW_FLYING_ADC_V2" />
+			<Option target="HW_FLYING_ADC_V1" />
 		</Unit>
 		<Unit filename="include/hwinit.h">
-			<Option target="HWV2" />
-			<Option target="HWV1" />
+			<Option target="HW_FLYING_ADC_V2" />
+			<Option target="HW_FLYING_ADC_V1" />
 		</Unit>
 		<Unit filename="include/param_prj.h">
-			<Option target="HWV2" />
-			<Option target="HWV1" />
+			<Option target="HW_FLYING_ADC_V2" />
+			<Option target="HW_FLYING_ADC_V1" />
 		</Unit>
 		<Unit filename="include/selftest.h">
-			<Option target="HWV2" />
-			<Option target="HWV1" />
+			<Option target="HW_FLYING_ADC_V2" />
+			<Option target="HW_FLYING_ADC_V1" />
 		</Unit>
 		<Unit filename="include/temp_meas.h">
-			<Option target="HWV2" />
-			<Option target="HWV1" />
+			<Option target="HW_FLYING_ADC_V2" />
+			<Option target="HW_FLYING_ADC_V1" />
 		</Unit>
 		<Unit filename="libopeninv/include/anain.h">
-			<Option target="HWV2" />
-			<Option target="HWV1" />
+			<Option target="HW_FLYING_ADC_V2" />
+			<Option target="HW_FLYING_ADC_V1" />
 		</Unit>
 		<Unit filename="libopeninv/include/canhardware.h">
-			<Option target="HWV2" />
-			<Option target="HWV1" />
+			<Option target="HW_FLYING_ADC_V2" />
+			<Option target="HW_FLYING_ADC_V1" />
 		</Unit>
 		<Unit filename="libopeninv/include/canmap.h">
-			<Option target="HWV2" />
-			<Option target="HWV1" />
+			<Option target="HW_FLYING_ADC_V2" />
+			<Option target="HW_FLYING_ADC_V1" />
 		</Unit>
 		<Unit filename="libopeninv/include/cansdo.h">
-			<Option target="HWV2" />
-			<Option target="HWV1" />
+			<Option target="HW_FLYING_ADC_V2" />
+			<Option target="HW_FLYING_ADC_V1" />
 		</Unit>
 		<Unit filename="libopeninv/include/crc8.h">
-			<Option target="HWV2" />
-			<Option target="HWV1" />
+			<Option target="HW_FLYING_ADC_V2" />
+			<Option target="HW_FLYING_ADC_V1" />
 		</Unit>
 		<Unit filename="libopeninv/include/delay.h">
-			<Option target="HWV2" />
-			<Option target="HWV1" />
+			<Option target="HW_FLYING_ADC_V2" />
+			<Option target="HW_FLYING_ADC_V1" />
 		</Unit>
 		<Unit filename="libopeninv/include/digio.h">
-			<Option target="HWV2" />
-			<Option target="HWV1" />
+			<Option target="HW_FLYING_ADC_V2" />
+			<Option target="HW_FLYING_ADC_V1" />
 		</Unit>
 		<Unit filename="libopeninv/include/errormessage.h">
-			<Option target="HWV2" />
-			<Option target="HWV1" />
+			<Option target="HW_FLYING_ADC_V2" />
+			<Option target="HW_FLYING_ADC_V1" />
 		</Unit>
 		<Unit filename="libopeninv/include/foc.h">
-			<Option target="HWV2" />
-			<Option target="HWV1" />
+			<Option target="HW_FLYING_ADC_V2" />
+			<Option target="HW_FLYING_ADC_V1" />
 		</Unit>
 		<Unit filename="libopeninv/include/fu.h">
-			<Option target="HWV2" />
-			<Option target="HWV1" />
+			<Option target="HW_FLYING_ADC_V2" />
+			<Option target="HW_FLYING_ADC_V1" />
 		</Unit>
 		<Unit filename="libopeninv/include/linbus.h">
-			<Option target="HWV2" />
-			<Option target="HWV1" />
+			<Option target="HW_FLYING_ADC_V2" />
+			<Option target="HW_FLYING_ADC_V1" />
 		</Unit>
 		<Unit filename="libopeninv/include/my_fp.h">
-			<Option target="HWV2" />
-			<Option target="HWV1" />
+			<Option target="HW_FLYING_ADC_V2" />
+			<Option target="HW_FLYING_ADC_V1" />
 		</Unit>
 		<Unit filename="libopeninv/include/my_math.h">
-			<Option target="HWV2" />
-			<Option target="HWV1" />
+			<Option target="HW_FLYING_ADC_V2" />
+			<Option target="HW_FLYING_ADC_V1" />
 		</Unit>
 		<Unit filename="libopeninv/include/my_string.h">
-			<Option target="HWV2" />
-			<Option target="HWV1" />
+			<Option target="HW_FLYING_ADC_V2" />
+			<Option target="HW_FLYING_ADC_V1" />
 		</Unit>
 		<Unit filename="libopeninv/include/param_save.h">
-			<Option target="HWV2" />
-			<Option target="HWV1" />
+			<Option target="HW_FLYING_ADC_V2" />
+			<Option target="HW_FLYING_ADC_V1" />
 		</Unit>
 		<Unit filename="libopeninv/include/params.h">
-			<Option target="HWV2" />
-			<Option target="HWV1" />
+			<Option target="HW_FLYING_ADC_V2" />
+			<Option target="HW_FLYING_ADC_V1" />
 		</Unit>
 		<Unit filename="libopeninv/include/picontroller.h">
-			<Option target="HWV2" />
-			<Option target="HWV1" />
+			<Option target="HW_FLYING_ADC_V2" />
+			<Option target="HW_FLYING_ADC_V1" />
 		</Unit>
 		<Unit filename="libopeninv/include/printf.h">
-			<Option target="HWV2" />
-			<Option target="HWV1" />
+			<Option target="HW_FLYING_ADC_V2" />
+			<Option target="HW_FLYING_ADC_V1" />
 		</Unit>
 		<Unit filename="libopeninv/include/sdocommands.h" />
 		<Unit filename="libopeninv/include/sine_core.h">
-			<Option target="HWV2" />
-			<Option target="HWV1" />
+			<Option target="HW_FLYING_ADC_V2" />
+			<Option target="HW_FLYING_ADC_V1" />
 		</Unit>
 		<Unit filename="libopeninv/include/stm32_can.h">
-			<Option target="HWV2" />
-			<Option target="HWV1" />
+			<Option target="HW_FLYING_ADC_V2" />
+			<Option target="HW_FLYING_ADC_V1" />
 		</Unit>
 		<Unit filename="libopeninv/include/stm32_loader.h">
-			<Option target="HWV2" />
-			<Option target="HWV1" />
+			<Option target="HW_FLYING_ADC_V2" />
+			<Option target="HW_FLYING_ADC_V1" />
 		</Unit>
 		<Unit filename="libopeninv/include/stm32scheduler.h">
-			<Option target="HWV2" />
-			<Option target="HWV1" />
+			<Option target="HW_FLYING_ADC_V2" />
+			<Option target="HW_FLYING_ADC_V1" />
 		</Unit>
 		<Unit filename="libopeninv/include/terminal.h">
-			<Option target="HWV2" />
-			<Option target="HWV1" />
+			<Option target="HW_FLYING_ADC_V2" />
+			<Option target="HW_FLYING_ADC_V1" />
 		</Unit>
 		<Unit filename="libopeninv/include/terminalcommands.h">
-			<Option target="HWV2" />
-			<Option target="HWV1" />
+			<Option target="HW_FLYING_ADC_V2" />
+			<Option target="HW_FLYING_ADC_V1" />
 		</Unit>
 		<Unit filename="libopeninv/src/anain.cpp">
-			<Option target="HWV2" />
-			<Option target="HWV1" />
+			<Option target="HW_FLYING_ADC_V2" />
+			<Option target="HW_FLYING_ADC_V1" />
 		</Unit>
 		<Unit filename="libopeninv/src/canhardware.cpp">
-			<Option target="HWV2" />
-			<Option target="HWV1" />
+			<Option target="HW_FLYING_ADC_V2" />
+			<Option target="HW_FLYING_ADC_V1" />
 		</Unit>
 		<Unit filename="libopeninv/src/canmap.cpp">
-			<Option target="HWV2" />
-			<Option target="HWV1" />
+			<Option target="HW_FLYING_ADC_V2" />
+			<Option target="HW_FLYING_ADC_V1" />
 		</Unit>
 		<Unit filename="libopeninv/src/cansdo.cpp">
-			<Option target="HWV2" />
-			<Option target="HWV1" />
+			<Option target="HW_FLYING_ADC_V2" />
+			<Option target="HW_FLYING_ADC_V1" />
 		</Unit>
 		<Unit filename="libopeninv/src/crc8.cpp">
-			<Option target="HWV2" />
-			<Option target="HWV1" />
+			<Option target="HW_FLYING_ADC_V2" />
+			<Option target="HW_FLYING_ADC_V1" />
 		</Unit>
 		<Unit filename="libopeninv/src/digio.cpp">
-			<Option target="HWV2" />
-			<Option target="HWV1" />
+			<Option target="HW_FLYING_ADC_V2" />
+			<Option target="HW_FLYING_ADC_V1" />
 		</Unit>
 		<Unit filename="libopeninv/src/errormessage.cpp">
-			<Option target="HWV2" />
-			<Option target="HWV1" />
+			<Option target="HW_FLYING_ADC_V2" />
+			<Option target="HW_FLYING_ADC_V1" />
 		</Unit>
 		<Unit filename="libopeninv/src/foc.cpp">
-			<Option target="HWV2" />
-			<Option target="HWV1" />
+			<Option target="HW_FLYING_ADC_V2" />
+			<Option target="HW_FLYING_ADC_V1" />
 		</Unit>
 		<Unit filename="libopeninv/src/fu.cpp">
-			<Option target="HWV2" />
-			<Option target="HWV1" />
+			<Option target="HW_FLYING_ADC_V2" />
+			<Option target="HW_FLYING_ADC_V1" />
 		</Unit>
 		<Unit filename="libopeninv/src/linbus.cpp">
-			<Option target="HWV2" />
-			<Option target="HWV1" />
+			<Option target="HW_FLYING_ADC_V2" />
+			<Option target="HW_FLYING_ADC_V1" />
 		</Unit>
 		<Unit filename="libopeninv/src/my_fp.c">
 			<Option compilerVar="CC" />
-			<Option target="HWV2" />
-			<Option target="HWV1" />
+			<Option target="HW_FLYING_ADC_V2" />
+			<Option target="HW_FLYING_ADC_V1" />
 		</Unit>
 		<Unit filename="libopeninv/src/my_string.c">
 			<Option compilerVar="CC" />
-			<Option target="HWV2" />
-			<Option target="HWV1" />
+			<Option target="HW_FLYING_ADC_V2" />
+			<Option target="HW_FLYING_ADC_V1" />
 		</Unit>
 		<Unit filename="libopeninv/src/param_save.cpp">
-			<Option target="HWV2" />
-			<Option target="HWV1" />
+			<Option target="HW_FLYING_ADC_V2" />
+			<Option target="HW_FLYING_ADC_V1" />
 		</Unit>
 		<Unit filename="libopeninv/src/params.cpp">
-			<Option target="HWV2" />
-			<Option target="HWV1" />
+			<Option target="HW_FLYING_ADC_V2" />
+			<Option target="HW_FLYING_ADC_V1" />
 		</Unit>
 		<Unit filename="libopeninv/src/picontroller.cpp">
-			<Option target="HWV2" />
-			<Option target="HWV1" />
+			<Option target="HW_FLYING_ADC_V2" />
+			<Option target="HW_FLYING_ADC_V1" />
 		</Unit>
 		<Unit filename="libopeninv/src/printf.cpp">
-			<Option target="HWV2" />
-			<Option target="HWV1" />
+			<Option target="HW_FLYING_ADC_V2" />
+			<Option target="HW_FLYING_ADC_V1" />
 		</Unit>
 		<Unit filename="libopeninv/src/sdocommands.cpp" />
 		<Unit filename="libopeninv/src/sine_core.cpp">
-			<Option target="HWV2" />
-			<Option target="HWV1" />
+			<Option target="HW_FLYING_ADC_V2" />
+			<Option target="HW_FLYING_ADC_V1" />
 		</Unit>
 		<Unit filename="libopeninv/src/stm32_can.cpp">
-			<Option target="HWV2" />
-			<Option target="HWV1" />
+			<Option target="HW_FLYING_ADC_V2" />
+			<Option target="HW_FLYING_ADC_V1" />
 		</Unit>
 		<Unit filename="libopeninv/src/stm32scheduler.cpp">
-			<Option target="HWV2" />
-			<Option target="HWV1" />
+			<Option target="HW_FLYING_ADC_V2" />
+			<Option target="HW_FLYING_ADC_V1" />
 		</Unit>
 		<Unit filename="libopeninv/src/terminal.cpp">
-			<Option target="HWV2" />
-			<Option target="HWV1" />
+			<Option target="HW_FLYING_ADC_V2" />
+			<Option target="HW_FLYING_ADC_V1" />
 		</Unit>
 		<Unit filename="libopeninv/src/terminalcommands.cpp">
-			<Option target="HWV2" />
-			<Option target="HWV1" />
+			<Option target="HW_FLYING_ADC_V2" />
+			<Option target="HW_FLYING_ADC_V1" />
 		</Unit>
 		<Unit filename="linker.ld">
-			<Option target="HWV2" />
-			<Option target="HWV1" />
+			<Option target="HW_FLYING_ADC_V2" />
+			<Option target="HW_FLYING_ADC_V1" />
 		</Unit>
 		<Unit filename="src/bmsalgo.cpp">
-			<Option target="HWV2" />
-			<Option target="HWV1" />
+			<Option target="HW_FLYING_ADC_V2" />
+			<Option target="HW_FLYING_ADC_V1" />
 		</Unit>
 		<Unit filename="src/bmsfsm.cpp">
-			<Option target="HWV2" />
-			<Option target="HWV1" />
+			<Option target="HW_FLYING_ADC_V2" />
+			<Option target="HW_FLYING_ADC_V1" />
 		</Unit>
 		<Unit filename="src/bmsio.cpp">
-			<Option target="HWV2" />
-			<Option target="HWV1" />
+			<Option target="HW_FLYING_ADC_V2" />
+			<Option target="HW_FLYING_ADC_V1" />
 		</Unit>
 		<Unit filename="src/flyingadcbms.cpp">
-			<Option target="HWV2" />
-			<Option target="HWV1" />
+			<Option target="HW_FLYING_ADC_V2" />
+			<Option target="HW_FLYING_ADC_V1" />
 		</Unit>
 		<Unit filename="src/hwinit.cpp">
-			<Option target="HWV2" />
-			<Option target="HWV1" />
+			<Option target="HW_FLYING_ADC_V2" />
+			<Option target="HW_FLYING_ADC_V1" />
 		</Unit>
 		<Unit filename="src/main.cpp">
-			<Option target="HWV2" />
-			<Option target="HWV1" />
+			<Option target="HW_FLYING_ADC_V2" />
+			<Option target="HW_FLYING_ADC_V1" />
 		</Unit>
 		<Unit filename="src/selftest.cpp">
-			<Option target="HWV2" />
-			<Option target="HWV1" />
+			<Option target="HW_FLYING_ADC_V2" />
+			<Option target="HW_FLYING_ADC_V1" />
 		</Unit>
 		<Unit filename="src/temp_meas.cpp">
-			<Option target="HWV2" />
-			<Option target="HWV1" />
+			<Option target="HW_FLYING_ADC_V2" />
+			<Option target="HW_FLYING_ADC_V1" />
 		</Unit>
 		<Unit filename="src/terminal_prj.cpp">
-			<Option target="HWV2" />
-			<Option target="HWV1" />
+			<Option target="HW_FLYING_ADC_V2" />
+			<Option target="HW_FLYING_ADC_V1" />
 		</Unit>
 		<Unit filename="test/Makefile">
 			<Option target="Test" />
@@ -370,10 +370,10 @@
 				<general />
 			</DoxyBlocks>
 			<debugger>
-				<remote_debugging target="HWV1">
+				<remote_debugging target="HW_FLYING_ADC_V1">
 					<options conn_type="0" ip_address="localhost" ip_port="3333" additional_cmds="load&#x0A;r" />
 				</remote_debugging>
-				<remote_debugging target="HWV2">
+				<remote_debugging target="HW_FLYING_ADC_V2">
 					<options conn_type="0" ip_address="localhost" ip_port="3333" additional_cmds="load&#x0A;r" />
 				</remote_debugging>
 			</debugger>

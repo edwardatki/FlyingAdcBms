@@ -5,11 +5,11 @@
 ##
 
 # List of supported hardware variants
-HW_LIST ?= HWV1 HWV2 HW_MAX
+HW_LIST ?= HW_FLYING_ADC_V1 HW_FLYING_ADC_V2 HW_MAX17841B
 
 OUT_DIR      = obj
 PREFIX       ?= arm-none-eabi
-BINARY       ?= stm32_bms
+BINARY       ?= stm32_bms_$(HW)
 SIZE         = $(PREFIX)-size
 CC           = $(PREFIX)-gcc
 CPP          = $(PREFIX)-g++
@@ -75,7 +75,8 @@ all: $(addprefix build-,$(HW_LIST))
 
 build-%:
 	@echo "==== Building for HW=$* ===="
-	$(MAKE) HW=$* BINARY=$(BINARY)_$* default
+	# $(MAKE) HW=$* BINARY=$(BINARY)_$* default
+	$(MAKE) HW=$* default
 
 ### Optional debug/Release entry points
 Debug: images
@@ -120,8 +121,8 @@ clean:
 	@printf "  CLEAN   ${OUT_DIR}\n"
 	$(Q)rm -rf ${OUT_DIR}
 	@for hw in $(HW_LIST); do \
-		echo "  CLEAN   $(BINARY)_$$hw*"; \
-		rm -f $(BINARY)_$$hw $(BINARY)_$$hw.bin $(BINARY)_$$hw.hex || true; \
+		echo "  CLEAN   $(BINARY)$$hw*"; \
+		rm -f $(BINARY)$$hw $(BINARY)$$hw.bin $(BINARY)$$hw.hex || true; \
 	done
 
 ### Clean tests
