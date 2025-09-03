@@ -39,7 +39,7 @@ OBJSL        = main.o hwinit.o stm32scheduler.o params.o  \
                param_save.o errormessage.o stm32_can.o canhardware.o canmap.o cansdo.o sdocommands.o \
                terminalcommands.o bmsfsm.o bmsalgo.o bmsio.o temp_meas.o selftest.o \
 			   flyingadcbms.o cellmux.o bitbangi2c.o mcp3421.o pca9536.o \
-			   maxbms.o
+			   maxbms.o max17841b.o
 
 OBJS         = $(patsubst %.o,$(OUT_DIR)/%.o, $(OBJSL))
 DEPENDS      = $(patsubst %.o,$(OUT_DIR)/%.d, $(OBJSL))

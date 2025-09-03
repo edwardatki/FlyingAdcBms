@@ -1,541 +1,172 @@
+#include <libopencm3/stm32/gpio.h>
+#include <libopencm3/stm32/spi.h>
+#include "digio.h"
+#include "hwdefs.h"
+
+#define CMD_HELLO_ALL 0x57
+#define CMD_WRITE_ALL 0x02
+#define CMD_READ_ALL 0x03
+#define CMD_WRITE_DEVICE 0x04
+#define CMD_READ_DEVICE 0x05
+
+#define WR_RX_INT_FLAGS 0x08
+#define RD_RX_INT_FLAGS 0x09
+#define WR_LD_Q 0xC0
+#define RD_NXT_MSG 0x93
+
 // SPISettings MAX17841(4000000, MSBFIRST, SPI_MODE0);
 
-// /************************************
-// * Reads data from all slave devices *
-// ************************************/
-// void readAllSlaves(uint8_t dataRegister, boolean setupDone) // Read all slaves
-// {
-// 	uint8_t command = 0x03; // READALL
-// 	uint8_t byteList[3] = {command, dataRegister, 0x00};
-// 	uint8_t PEC = calculatePEC(byteList, 3);
-// 	uint8_t readRegisterData[Message_length]; //change
-// 	uint8_t errorByte = 0x00;
-// 	static uint8_t resendCounter = 0;
-// 	//static uint8_t failCounter = 0;
-	
-// 	/*if(failCounter >= 4)
-// 	{
-// 		//clearBuffers();
-// 		failCounter = 0; // Reset counter
-// 		Serial.println("Buffers cleared");
-// 	}*/
- 
-// 	SPI.beginTransaction(MAX17841);
-	
-// 	// Load the READALL command sequence into the load queue
-// 	digitalWrite(SPI_MAX_CS_PIN, LOW);
-//   SPI.transfer(0xC0); // WR_LD_Q SPI command byte (write the load queue)
-//   SPI.transfer(Message_length); // Message length (5 + 2 x n = 29) //change
-//   SPI.transfer(command); // READALL command byte
-//   SPI.transfer(dataRegister); // Register address
-//   SPI.transfer(0x00); // Data-check byte (seed value = 0x00)
-//   SPI.transfer(PEC); // PEC byte
-//   SPI.transfer(0x00); // Alive-counter byte (seed value = 0x00)
-//   digitalWrite(SPI_MAX_CS_PIN, HIGH); 
-  
-//   transmitQueue();
-	
-// 	// Read the receive buffer
-// 	digitalWrite(SPI_MAX_CS_PIN, LOW);
-// 	SPI.transfer(0x93); // RD_NXT_MSG SPI command byte
-	
-// 	for(int i=0; i<Message_length; i++) //change
-//   {
-// 		readRegisterData[i] = SPI.transfer(0x93);
-// 	}
-	
-// 	errorByte |= receiveBufferError();
-	
-// 	SPI.endTransaction();
-	
-// 	// Verify that the device register data is received correctly during the READALL sequence
-// 	if(!((readRegisterData[0] == command) && (readRegisterData[1] == dataRegister)))
-//   {
-// 		errorByte |= mismatchBefore; 
-// 	}
-// 	if(setupDone)
-// 	{
-// 		uint8_t checkPEC = calculatePEC(readRegisterData, (Message_length-2) ); //change
-// 		// Check check-byte, PEC and alive-counter	
-// 		if(!((readRegisterData[(Message_length-3)] == 0x00) && (readRegisterData[(Message_length-2)] == checkPEC) && (readRegisterData[(Message_length-1)] == numberOfModules))) //change
-// 		{
-// 			errorByte |= mismatchAfter;
-// 			if(readRegisterData[(Message_length-3)] != 0x00) // change
-// 			{
-// 				readAllSlaves(0x02, false); // Read STATUS of all slaves with checks ignored
-// 				writeAllSlaves(0x02, 0x0000, true); // Clear STATUS register
-// 				Serial.println("STATUS cleared");
-// 			}
-// 		}
-// 	}
-	
-// 	/*// Print data received
-// 	for(int i=0; i<Message_length; i++)//change
-//   {
-// 		Serial.print(readRegisterData[i], HEX);
-// 		Serial.print(" ");
-// 	}
-// 	Serial.println();*/
+#define MAX_MODULES 32
+#define MAX_RX_MESSAGE_LENGTH (5 + (2 * MAX_MODULES))
 
-// 	if(errorByte) // Error
-// 	{
-//     resendCounter++;
-//     Serial.println(errorByte, HEX);
-//     errorByte &= 0x00; // Clear errors
-//     Serial.println("errorByte cleared readAll");
-    
-//     if(resendCounter > 2)
-//     {
-// 			Serial.println("READALL fail");
-// 			resendCounter = 0;
-// 			//failCounter++;
-// 			return;
-// 		}
-    
-//     delay(1);
-//     readAllSlaves(dataRegister, setupDone); // Resend READALL
-//   }
-//   else // No errors, clear counters and store data received
-//   {
-// 		resendCounter = 0; // Reset counter
-// 		//failCounter = 0; // Reset counter
-		
-// 		if((dataRegister >= 0x20) && (dataRegister <= 0x2B)) // Cell voltage measurements
-// 		{
-// 			storeCellVoltage(dataRegister, readRegisterData);
-// 		}
-  
-// 		if(dataRegister == 0x2D) // Aux voltage measurements (external temperature sensors)
-// 		{
-// 			storeCellTemperature(readRegisterData);
-// 		}
-		
-// 		if(dataRegister == 0x50) // Die temperature measurements
-// 		{
-// 			storeDieTemperature(readRegisterData);
-// 		}
-		
-// 		if(dataRegister == 0x13) // Read SCANCTRL to check if data is ready to be read
-// 		{
-// 			checkDataReady(readRegisterData);
-// 		}
-		
-// 		if(dataRegister == 0x02) // Read STATUS and print content
-// 		{
-// 			// Print data received
-// 			for(int i=0; i<Message_length; i++)
-// 			{
-// 				Serial.print(readRegisterData[i], HEX);
-// 				Serial.print(" ");
-// 			}
-// 			Serial.println();
-// 		}
-// 	}  
-// }
-
-// /*****************************************
-// * Reads data from addressed slave device *
-// *****************************************/
-// void readAddressedSlave(uint8_t dataRegister, uint8_t address, boolean setupDone) // Read addressed slave
-// {
-// 	uint8_t command = 0x05; // READDEVICE
-// 	command |= (address << 3);
-// 	uint8_t byteList[3] = {command, dataRegister, 0x00};
-// 	uint8_t PEC = calculatePEC(byteList, 3);
-// 	uint8_t readRegisterData[7];
-// 	uint8_t errorByte = 0x00;
-// 	static uint8_t resendCounter = 0;
-// 	//static uint8_t failCounter = 0;
-	
-// 	/*if(failCounter >= 4)
-// 	{
-// 		//clearBuffers();
-// 		failCounter = 0; // Reset counter
-// 		Serial.println("Buffers cleared");
-// 	}*/
-		
-// 	SPI.beginTransaction(MAX17841);
-	
-// 	// 1, Load the READDEVICE command sequence into the load queue
-// 	digitalWrite(SPI_MAX_CS_PIN, LOW);
-//   SPI.transfer(0xC0); // WR_LD_Q SPI command byte (write the load queue)
-//   SPI.transfer(0x07); // Message length (5 + 2 x n = 29)
-//   SPI.transfer(command); // READALL command byte
-//   SPI.transfer(dataRegister); // Register address
-//   SPI.transfer(0x00); // Data-check byte (seed value = 0x00)
-//   SPI.transfer(PEC); // PEC byte
-//   SPI.transfer(0x00); // Alive-counter byte (seed value = 0x00)
-//   digitalWrite(SPI_MAX_CS_PIN, HIGH); 
-  
-//   transmitQueue();
-	
-// 	// 4, Read the receive buffer
-// 	digitalWrite(SPI_MAX_CS_PIN, LOW);
-// 	SPI.transfer(0x93); // RD_NXT_MSG SPI command byte
-	
-// 	for(int i=0; i<7; i++)
-//   {
-// 		readRegisterData[i] = SPI.transfer(0x93);
-// 	}
-	
-// 	errorByte |= receiveBufferError();
-	
-// 	SPI.endTransaction();
-	
-// 	// Verify that the device register data is received correctly during the READDEVICE sequence
-// 	if(!((readRegisterData[0] == command) && (readRegisterData[1] == dataRegister)))
-//   {
-// 		errorByte |= mismatchBefore; 
-// 	}
-// 	if(setupDone)
-// 	{
-// 		uint8_t checkPEC = calculatePEC(readRegisterData, 5);
-// 		// Check check-byte, PEC and alive-counter		
-// 		if(!((readRegisterData[4] == 0x00) && (readRegisterData[5] == checkPEC) && (readRegisterData[6] == 0x01)))
-// 		{
-// 			errorByte |= mismatchAfter;
-// 			if(readRegisterData[4] != 0x00)
-// 			{
-// 				readAddressedSlave(0x02, address, false); // Read STATUS of addressed slave with checks ignored
-// 				writeAddressedSlave(0x02, 0x0000, address, true); // Clear STATUS register
-// 				Serial.println("STATUS cleared");
-// 			}
-// 		}
-// 	}
-	
-// 	/*// Print data received
-// 	for(int i=0; i<7; i++)
-//   {
-// 		Serial.print(readRegisterData[i], HEX);
-// 		Serial.print(" ");
-// 	}
-// 	Serial.println();*/
-	
-// 	if(errorByte) // Error
-// 	{
-//     resendCounter++;
-//     Serial.println(errorByte, HEX);
-//     errorByte &= 0x00; // Clear errors
-//     Serial.println("errorByte cleared readAddr");
-    
-//     if(resendCounter > 2)
-//     {
-// 			Serial.println("READEVICE fail");
-// 			resendCounter = 0;
-// 			//failCounter++;
-// 			return;
-// 		}
-    
-//     delay(1);
-//     readAddressedSlave(dataRegister, address, setupDone); // Resend READDEVICE
-//   }
-//   else // No errors, clear counters and store data received
-//   {
-// 		resendCounter = 0; // Reset counter
-// 		//failCounter = 0; // Reset counter
-		
-// 		if(dataRegister == 0x02) // Read STATUS and print content
-// 		{
-// 			// Print data received
-// 			for(int i=0; i<7; i++)
-// 			{
-// 				Serial.print(readRegisterData[i], HEX);
-// 				Serial.print(" ");
-// 			}
-// 			Serial.println();
-// 		}
-// 	} 
-// }
-
-// /***********************************
-// * Writes data to all slave devices *
-// ***********************************/
-// void writeAllSlaves(uint8_t dataRegister, uint16_t data, boolean setupDone)
-// {
-// 	uint8_t command = 0x02; // WRITEALL
-// 	uint8_t byteList[4] = {command, dataRegister, lowByte(data), highByte(data)};
-// 	uint8_t PEC = calculatePEC(byteList, 4);
-// 	uint8_t readRegisterData[6];
-// 	uint8_t errorByte = 0x00;
-// 	static uint8_t resendCounter = 0;
-// 	//static uint8_t failCounter = 0;
-	
-// 	/*if(failCounter >= 4)
-// 	{
-// 		//clearBuffers();
-// 		failCounter = 0; // Reset counter
-// 		Serial.println("Buffers cleared");
-// 	}*/
-	
-// 	SPI.beginTransaction(MAX17841);
-	
-// 	// 1, Load the WRITEALL command sequence into the load queue
-// 	digitalWrite(SPI_MAX_CS_PIN, LOW);
-//   SPI.transfer(0xC0); // WR_LD_Q SPI command byte (write the load queue)
-//   SPI.transfer(0x06); // Message length
-//   SPI.transfer(command); // WRITEALL command byte
-//   SPI.transfer(dataRegister); // Register address
-//   SPI.transfer(lowByte(data)); // LS byte of register data to be written
-//   SPI.transfer(highByte(data)); // MS byte of register data to be written
-//   SPI.transfer(PEC); // PEC byte
-//   SPI.transfer(0x00); // Alive-counter byte (seed value = 0x00)
-//   digitalWrite(SPI_MAX_CS_PIN, HIGH); 
-  
-//   transmitQueue();
-	
-// 	// 4, Read the receive buffer
-// 	digitalWrite(SPI_MAX_CS_PIN, LOW);
-// 	SPI.transfer(0x93); // RD_NXT_MSG SPI command byte
-	
-// 	for(int i=0; i<6; i++)
-//   {
-// 		readRegisterData[i] = SPI.transfer(0x93);
-// 	}
-//   digitalWrite(SPI_MAX_CS_PIN, HIGH);
-	
-// 	errorByte |= receiveBufferError();
-  
-//   SPI.endTransaction();
-  
-//   // Verify that the device register data is what was written during the WRITEALL sequence
-//   if(!((readRegisterData[0] == command) && (readRegisterData[1] == dataRegister) && (readRegisterData[2] == lowByte(data)) && (readRegisterData[3] == highByte(data)) && (readRegisterData[4] == PEC)))
-//   {
-// 		errorByte |= mismatchBefore; 
-// 	}
-// 	if(setupDone)
-// 	{
-// 		// Check alive-counter
-// 		if(!(readRegisterData[5] == numberOfModules)) // change
-// 		{
-// 			errorByte |= mismatchAfter;
-// 		}
-// 	}
-
-// 	/*// Print data received
-//   for(int i=0; i<6; i++)
-//   {
-//     Serial.print(readRegisterData[i], HEX);
-//     Serial.print(" ");
-//   }
-//   Serial.println();*/
-  
-//   if(errorByte) // Error
-// 	{
-//     resendCounter++;
-//     Serial.println(errorByte, HEX);
-//     errorByte &= 0x00; // Clear errors
-//     Serial.println("errorByte cleared writeAll");
-    
-//     if(resendCounter > 2)
-//     {
-// 			Serial.println("WRITEALL fail");
-// 			resendCounter = 0;
-// 			//failCounter++;
-// 			return;
-// 		}
-    
-//     delay(1);
-//     writeAllSlaves(dataRegister, data, setupDone); // Resend WRITEALL
-//   }
-//   else // No errors, clear counters
-//   {
-// 		resendCounter = 0; // Reset counter
-// 		//failCounter = 0; // Reset counter
-// 	}
-// }
-
-// /****************************************
-// * Writes data to addressed slave device *
-// ****************************************/
-// void writeAddressedSlave(uint8_t dataRegister, uint16_t data, uint8_t address, boolean setupDone) // Write addressed slave
-// {
-// 	uint8_t command = 0x04; // WRITEDEVICE
-// 	command |= (address << 3);
-// 	uint8_t byteList[4] = {command, dataRegister, lowByte(data), highByte(data)};
-// 	uint8_t PEC = calculatePEC(byteList, 4);
-// 	uint8_t readRegisterData[6];
-// 	uint8_t errorByte = 0x00;
-// 	static uint8_t resendCounter = 0;
-// 	//static uint8_t failCounter = 0;
-	
-// 	/*if(failCounter >= 4)
-// 	{
-// 		//clearBuffers();
-// 		failCounter = 0; // Reset counter
-// 		Serial.println("Buffers cleared");
-// 	}*/
-		
-// 	SPI.beginTransaction(MAX17841);
-	
-// 	// 1, Load the WRITEDEVICE command sequence into the load queue
-// 	digitalWrite(SPI_MAX_CS_PIN, LOW);
-//   SPI.transfer(0xC0); // WR_LD_Q SPI command byte (write the load queue)
-//   SPI.transfer(0x06); // Message length
-//   SPI.transfer(command); // WRITEDEVICE command byte
-//   SPI.transfer(dataRegister); // Register address
-//   SPI.transfer(lowByte(data)); // LS byte of register data to be written
-//   SPI.transfer(highByte(data)); // MS byte of register data to be written
-//   SPI.transfer(PEC); // PEC byte
-//   SPI.transfer(0x00); // Alive-counter byte (seed value = 0x00)
-//   digitalWrite(SPI_MAX_CS_PIN, HIGH); 
-  
-//   transmitQueue();
-	
-// 	// 4, Read the receive buffer
-// 	digitalWrite(SPI_MAX_CS_PIN, LOW);
-// 	SPI.transfer(0x93); // RD_NXT_MSG SPI command byte
-	
-// 	for(int i=0; i<6; i++)
-//   {
-// 		readRegisterData[i] = SPI.transfer(0x93);
-// 	}
-//   digitalWrite(SPI_MAX_CS_PIN, HIGH);
-	
-// 	errorByte |= receiveBufferError();
-  
-//   SPI.endTransaction();
-  
-// 	// Verify that the device register data is what was written during the WRITEDEVICE sequence
-// 	if(!((readRegisterData[0] == command) && (readRegisterData[1] == dataRegister) && (readRegisterData[2] == lowByte(data)) && (readRegisterData[3] == highByte(data)) && (readRegisterData[4] == PEC)))
-//   {
-// 		errorByte |= mismatchBefore; 
-// 	}
-// 	if(setupDone)
-// 	{
-// 		// Check alive-counter
-// 		if(!(readRegisterData[5] == 0x01))
-// 		{
-// 			errorByte |= mismatchAfter;
-// 		}
-// 	}
-
-// 	/*// Print data received
-//   for(int i=0; i<6; i++)
-//   {
-//     Serial.print(readRegisterData[i], HEX);
-//     Serial.print(" ");
-//   }
-//   Serial.println();*/
-  
-//   if(errorByte) // Error
-// 	{
-//     resendCounter++;
-//     Serial.println(errorByte, HEX);
-//     errorByte &= 0x00; // Clear errors
-//     Serial.println("errorByte cleared writeAddr");
-    
-//     if(resendCounter > 2)
-//     {
-// 			Serial.println("WRITEDEVICE fail");
-// 			resendCounter = 0;
-// 			//failCounter++;
-// 			return;
-// 		}
-    
-//     delay(1);
-//     writeAddressedSlave(dataRegister, data, address, setupDone); // Resend WRITEDEVICE
-//   }
-//   else // No errors, clear counters
-//   {
-// 		resendCounter = 0; // Reset counter
-// 		//failCounter = 0; // Reset counter
-// 	}
-// }
-
-/****************************************
-* Writes data to addressed slave device *
-****************************************/
-void writeAddressedSlave(uint8_t dataRegister, uint16_t data, uint8_t address, boolean setupDone) // Write addressed slave
+void LoadTransmitQueue(uint8_t *data, uint8_t length)
 {
-	uint8_t command = 0x04; // WRITEDEVICE
-	command |= (address << 3);
-	uint8_t byteList[4] = {command, dataRegister, lowByte(data), highByte(data)};
-	uint8_t PEC = calculatePEC(byteList, 4);
-	uint8_t readRegisterData[6];
-	uint8_t errorByte = 0x00;
-	static uint8_t resendCounter = 0;
-	//static uint8_t failCounter = 0;
-	
-	/*if(failCounter >= 4)
-	{
-		//clearBuffers();
-		failCounter = 0; // Reset counter
-		Serial.println("Buffers cleared");
-	}*/
-		
-	SPI.beginTransaction(MAX17841);
-	
-	// 1, Load the WRITEDEVICE command sequence into the load queue
-	digitalWrite(SPI_MAX_CS_PIN, LOW);
-    SPI.transfer(0xC0); // WR_LD_Q SPI command byte (write the load queue)
-    SPI.transfer(0x06); // Message length
-    SPI.transfer(command); // WRITEDEVICE command byte
-    SPI.transfer(dataRegister); // Register address
-    SPI.transfer(lowByte(data)); // LS byte of register data to be written
-    SPI.transfer(highByte(data)); // MS byte of register data to be written
-    SPI.transfer(PEC); // PEC byte
-    SPI.transfer(0x00); // Alive-counter byte (seed value = 0x00)
-    digitalWrite(SPI_MAX_CS_PIN, HIGH); 
-  
-    transmitQueue();
-	
-	// 4, Read the receive buffer
-	digitalWrite(SPI_MAX_CS_PIN, LOW);
-	SPI.transfer(0x93); // RD_NXT_MSG SPI command byte
-	
-	for(int i=0; i<6; i++)
-    {
-		readRegisterData[i] = SPI.transfer(0x93);
-	}
-    digitalWrite(SPI_MAX_CS_PIN, HIGH);
-	
-	errorByte |= receiveBufferError();
-  
-    SPI.endTransaction();
-  
-	// Verify that the device register data is what was written during the WRITEDEVICE sequence
-	if(!((readRegisterData[0] == command) && (readRegisterData[1] == dataRegister) && (readRegisterData[2] == lowByte(data)) && (readRegisterData[3] == highByte(data)) && (readRegisterData[4] == PEC)))
-    {
-		errorByte |= mismatchBefore; 
-	}
-	if(setupDone)
-	{
-		// Check alive-counter
-		if(!(readRegisterData[5] == 0x01))
-		{
-			errorByte |= mismatchAfter;
-		}
-	}
+    //cs low
+    spi_xfer(SPI1, WR_LD_Q);
+    spi_xfer(SPI1, length);
+    for (uint8_t i = 0; i < length; i++) spi_xfer(SPI1, data[i]);
+    //cs high
+}
 
-	/*// Print data received
-    for(int i=0; i<6; i++)
+void ReadReceiveQueue(uint8_t *data, uint8_t length) 
+{
+    //cs low
+    spi_xfer(SPI1, RD_NXT_MSG);
+    for (uint8_t i = 0; i < length; i++) data[i] = spi_xfer(SPI1, RD_NXT_MSG);
+    //cs high
+}
+
+bool CheckReceiveBufferError() {
+    //cs low
+    spi_xfer(SPI1, RD_RX_INT_FLAGS);
+    uint8_t check = spi_xfer(SPI1, RD_RX_INT_FLAGS);
+    //cs high
+
+    if (check != 0x00)
     {
-        Serial.print(readRegisterData[i], HEX);
-        Serial.print(" ");
+        // Clear error
+        //cs low
+        spi_xfer(SPI1, WR_RX_INT_FLAGS);
+        spi_xfer(SPI1, 0x00);
+        //cs high
     }
-    Serial.println();*/
-  
-    if(errorByte) // Error
-	{
-        resendCounter++;
-        Serial.println(errorByte, HEX);
-        errorByte &= 0x00; // Clear errors
-        Serial.println("errorByte cleared writeAddr");
 
-        if(resendCounter > 2)
-        {
-			Serial.println("WRITEDEVICE fail");
-			resendCounter = 0;
-			//failCounter++;
-			return;
-		}
+    return check != 0x00;
+}
+
+uint16_t ReadAddressedSlave(uint8_t dataRegister, uint8_t address, bool setupDone)
+{
+	uint8_t writeData[5] = {
+        (uint8_t)(CMD_READ_DEVICE | (address << 3)),
+        dataRegister,
+        0x00 //Data-check byte (seed value = 0x00)
+    };
+    writeData[4] = 0x00;//CalculatePEC(data, 3);
+    writeData[5] = 0x00; //Alive-counter byte (seed value = 0x00)
+	
+    LoadTransmitQueue(writeData, sizeof(writeData));
+    //TransmitQueue();
+
+    uint8_t readData[7]; //5 + (2 x n)
+    ReadReceiveQueue(readData, sizeof(readData));
     
-        delay(1);
-        writeAddressedSlave(dataRegister, data, address, setupDone); // Resend WRITEDEVICE
-    }
-    else // No errors, clear counters
+    bool error = false;
+    
+    error |= CheckReceiveBufferError();
+
+    // Verify that the device register data is what was written during the WRITEDEVICE sequence
+    for (uint8_t i = 0; i < 2; i++)
     {
-		resendCounter = 0; // Reset counter
-		//failCounter = 0; // Reset counter
-	}
+        if (readData[i] != writeData[i]) {
+            error |= true;
+            break;
+        }
+    }
+
+    if (setupDone)
+    {
+        //Check check-byte
+        if (readData[4] != 0x00)
+        {
+            error |= true;
+            //TODO: Clear STATUS register of addressed module
+        }
+
+        //Check PEC
+        uint8_t checkPEC = 0x00;//CalculatePEC(readData, 5);
+        if (readData[5] != checkPEC)
+        {
+            error |= true;
+        }
+
+        //Check alive-counter
+        if (readData[6] != 0x01)
+        {
+            error |= true;
+        }
+    }
+
+    //Try again if error
+    static uint8_t readAttempts = 0;
+    readAttempts += 1;
+    if (error && (readAttempts < 3))
+    {
+        //delay(1);
+        ReadAddressedSlave(dataRegister, address, setupDone);
+    } else {
+        readAttempts = 0;
+    }
+
+    return (readData[2] << 8) | readData[3];
+}
+
+void WriteAddressedSlave(uint8_t dataRegister, uint16_t data, uint8_t address, bool setupDone)
+{
+	uint8_t writeData[6] = {
+        (uint8_t)(CMD_WRITE_DEVICE | (address << 3)),
+        dataRegister, 
+        (uint8_t)(data & 0xFF),
+        (uint8_t)((data >> 8) & 0xFF),
+    };
+    writeData[5] = 0x00;//CalculatePEC(data, 4);
+    writeData[6] = 0x00; //Alive-counter byte (seed value = 0x00)
+	
+    LoadTransmitQueue(writeData, sizeof(writeData));
+    //TransmitQueue();
+
+    uint8_t readData[6];
+    ReadReceiveQueue(readData, sizeof(readData));
+    
+    bool error = false;
+    
+    error |= CheckReceiveBufferError();
+
+    // Verify that the device register data is what was written during the WRITEDEVICE sequence
+    for (uint8_t i = 0; i < 5; i++)
+    {
+        if (readData[i] != writeData[i]) {
+            error |= true;
+            break;
+        }
+    }
+
+    if (setupDone)
+    {
+        //Check alive-counter
+        if (readData[5] != 0x01)
+        {
+            error |= true;
+        }
+    }
+
+    //Try again if error
+    static uint8_t writeAttempts = 0;
+    writeAttempts += 1;
+    if (error && (writeAttempts < 3))
+    {
+        //delay(1);
+        WriteAddressedSlave(dataRegister, data, address, setupDone);
+    } else {
+        writeAttempts = 0;
+    }
 }
