@@ -7,7 +7,7 @@
 # List of supported hardware variants
 HW_LIST ?= HW_FLYING_ADC_V1 HW_FLYING_ADC_V2 HW_MAX17841B
 
-OUT_DIR      = obj
+OUT_DIR      = obj/$(HW)
 PREFIX       ?= arm-none-eabi
 BINARY       ?= stm32_bms_$(HW)
 SIZE         = $(PREFIX)-size
@@ -75,7 +75,6 @@ all: $(addprefix build-,$(HW_LIST))
 
 build-%:
 	@echo "==== Building for HW=$* ===="
-	# $(MAKE) HW=$* BINARY=$(BINARY)_$* default
 	$(MAKE) HW=$* default
 
 ### Optional debug/Release entry points
